@@ -1,0 +1,55 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Georgia", serif;
+  
+  --color-paper: #F9F8F6;
+  --color-ink: #1A1A1A;
+  --color-accent: #2563EB;
+  --color-muted: #64748B;
+  --color-border: #E2E8F0;
+  --color-gold: #D4AF37;
+}
+
+@layer base {
+  body {
+    @apply bg-paper text-ink antialiased;
+    font-feature-settings: "ss01", "ss02", "cv01", "cv02";
+  }
+
+  h1, h2, h3, .serif {
+    @apply font-serif italic font-bold;
+  }
+}
+
+@layer components {
+  .pill {
+    @apply inline-block px-3 py-1 rounded-full bg-border text-[10px] uppercase tracking-widest font-bold;
+  }
+
+  .stat-card {
+    @apply bg-white border border-border p-6 rounded-none shadow-none;
+  }
+
+  .hero-card {
+    @apply bg-ink text-white p-8 rounded-none relative;
+  }
+}
+
+@layer utilities {
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  vertical-align: middle;
+}
