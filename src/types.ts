@@ -13,6 +13,7 @@ export const AppScreen = {
   QUIZ_START: "QUIZ_START",
   QUIZ_QUESTION: "QUIZ_QUESTION",
   QUIZ_RESULT: "QUIZ_RESULT",
+  QUIZ_REVIEW: "QUIZ_REVIEW",
   MYTH_BUSTER: "MYTH_BUSTER",
   SAVED: "SAVED",
   PROFILE: "PROFILE",
@@ -32,7 +33,13 @@ export type UserRole = "first-time-voter" | "student" | "teacher" | "citizen" | 
 export type Language = "en" | "hi" | "bn" | "ta" | "te" | "mr" | "gu" | "kn" | "ml" | "pa";
 
 export interface UserProfile {
+  uid: string;
   name: string;
+  email: string | null;
+  photoURL: string | null;
+  avatarUrl: string | null;
+  isAuthenticated: boolean;
+  isGuest: boolean;
   role: UserRole;
   language: Language;
   readinessScore: number;
@@ -40,8 +47,34 @@ export interface UserProfile {
   timelineStepsCompleted: string[];
   quizzesCompleted: string[];
   quizScores: Record<string, number>;
+  quizHistory: QuizResultRecord[];
   badges: string[];
   savedItems: SavedItem[];
+}
+
+export interface ActiveQuiz {
+  id: string;
+  title: string;
+  sourceType: "mock" | "lesson" | "ai" | "timeline";
+  sourceTitle: string;
+  questions: QuizQuestion[];
+}
+
+export interface QuizAnswerReview {
+  question: QuizQuestion;
+  selectedIndex: number | null;
+  isCorrect: boolean;
+}
+
+export interface QuizResultRecord {
+  quizId: string;
+  title: string;
+  sourceType: ActiveQuiz["sourceType"];
+  sourceTitle: string;
+  score: number;
+  totalQuestions: number;
+  completedAt: string;
+  answers: QuizAnswerReview[];
 }
 
 export interface SavedItem {

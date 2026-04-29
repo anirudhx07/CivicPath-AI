@@ -54,6 +54,36 @@ The solution is designed around a neutral civic education assistant persona. It 
 - TypeScript
 - Vite
 
+## Firebase Setup
+1. Go to the Firebase Console.
+2. Create a Firebase project or open an existing one.
+3. Add a Web App to the project.
+4. Copy the Firebase config values from the Web App settings.
+5. Create a `.env` file in the project root, at the same level as `package.json` and `vite.config.ts`.
+6. Copy the keys from `.env.example` into `.env` and fill in the `VITE_FIREBASE_*` values.
+7. Go to Firebase Authentication.
+8. Enable the Google provider.
+9. Add `localhost` and your deployed domain to Authorized domains if needed.
+10. Restart the dev server after editing `.env`.
+
+```bash
+cp .env.example .env
+```
+
+Required Vite environment variables:
+
+```bash
+VITE_FIREBASE_API_KEY=
+VITE_FIREBASE_AUTH_DOMAIN=
+VITE_FIREBASE_PROJECT_ID=
+VITE_FIREBASE_STORAGE_BUCKET=
+VITE_FIREBASE_MESSAGING_SENDER_ID=
+VITE_FIREBASE_APP_ID=
+VITE_GEMINI_API_KEY=
+```
+
+Firebase is initialized from `src/services/firebase.ts` using `import.meta.env`. Do not use `process.env` in frontend code. If Firebase variables are missing, Google login is unavailable, but guest mode still works.
+
 ## Run Locally
 ```bash
 npm install
