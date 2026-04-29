@@ -15,17 +15,158 @@
 }
 
 @layer base {
+  :root {
+    --mobile-header-height: calc(4rem + env(safe-area-inset-top));
+    --mobile-bottom-nav-height: calc(5.5rem + env(safe-area-inset-bottom));
+    --page-gutter: clamp(1rem, 4vw, 2rem);
+  }
+
+  html,
+  body,
+  #root {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: hidden;
+  }
+
   body {
     @apply bg-paper text-ink antialiased;
+    min-height: 100dvh;
     font-feature-settings: "ss01", "ss02", "cv01", "cv02";
+  }
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  img,
+  video,
+  canvas,
+  svg {
+    max-width: 100%;
+  }
+
+  button,
+  [role="button"],
+  input,
+  select,
+  textarea {
+    min-height: 44px;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    max-width: 100%;
+  }
+
+  button,
+  a,
+  input,
+  select,
+  textarea {
+    touch-action: manipulation;
+  }
+
+  p,
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  li,
+  dd,
+  blockquote {
+    overflow-wrap: break-word;
+  }
+
+  button {
+    overflow-wrap: anywhere;
   }
 
   h1, h2, h3, .serif {
     @apply font-serif italic font-bold;
   }
+
+  .a11y-large-text {
+    font-size: 112.5%;
+  }
+
+  .a11y-high-contrast {
+    --color-paper: #ffffff;
+    --color-ink: #000000;
+    --color-accent: #0039ff;
+    --color-muted: #1f2937;
+    --color-border: #000000;
+  }
+
+  .a11y-high-contrast button,
+  .a11y-high-contrast input,
+  .a11y-high-contrast textarea,
+  .a11y-high-contrast select {
+    outline-color: #000000;
+  }
+
+  .a11y-dyslexia-font {
+    font-family: Verdana, Tahoma, Arial, ui-sans-serif, system-ui, sans-serif;
+    letter-spacing: 0.01em;
+    word-spacing: 0.08em;
+  }
+
+  .a11y-dyslexia-font h1,
+  .a11y-dyslexia-font h2,
+  .a11y-dyslexia-font h3,
+  .a11y-dyslexia-font .serif {
+    font-family: Verdana, Tahoma, Arial, ui-sans-serif, system-ui, sans-serif;
+    font-style: normal;
+  }
+
+  .a11y-reduce-motion *,
+  .a11y-reduce-motion *::before,
+  .a11y-reduce-motion *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.001ms !important;
+  }
 }
 
 @layer components {
+  .screen-shell {
+    width: 100%;
+    max-width: 72rem;
+    margin-inline: auto;
+    padding-inline: var(--page-gutter);
+    padding-top: calc(var(--mobile-header-height) + 1rem);
+    padding-bottom: calc(var(--mobile-bottom-nav-height) + 2rem);
+  }
+
+  .screen-shell-sm {
+    max-width: 42rem;
+  }
+
+  .screen-shell-md {
+    max-width: 56rem;
+  }
+
+  .screen-shell-lg {
+    max-width: 72rem;
+  }
+
+  .screen-shell-xl {
+    max-width: 80rem;
+  }
+
+  .screen-card {
+    width: 100%;
+    min-width: 0;
+  }
+
   .pill {
     @apply inline-block px-3 py-1 rounded-full bg-border text-[10px] uppercase tracking-widest font-bold;
   }
@@ -36,6 +177,13 @@
 
   .hero-card {
     @apply bg-ink text-white p-8 rounded-none relative;
+  }
+
+  @media (min-width: 1024px) {
+    .screen-shell {
+      padding-top: clamp(2.5rem, 4vw, 4rem);
+      padding-bottom: clamp(3rem, 5vw, 6rem);
+    }
   }
 }
 

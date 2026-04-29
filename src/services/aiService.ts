@@ -1,4 +1,5 @@
 import type { GoogleGenAI as GoogleGenAIClient } from "@google/genai";
+import { getGeminiApiKey as getConfiguredGeminiApiKey } from "./env";
 
 export type AnswerMode = "Simple" | "Detailed" | "Student" | "Teacher";
 
@@ -155,18 +156,8 @@ function buildLocalClaimFallback(claim: string): ElectionClaimClassification {
   };
 }
 
-function getGeminiApiKey(): string | null {
-  const key = import.meta.env.VITE_GEMINI_API_KEY?.trim();
-
-  if (!key || key.startsWith("YOUR_") || key.startsWith("MY_")) {
-    return null;
-  }
-
-  return key;
-}
-
 async function createClient(): Promise<GoogleGenAIClient | null> {
-  const apiKey = getGeminiApiKey();
+  const apiKey = getConfiguredGeminiApiKey();
 
   if (!apiKey) {
     return null;
@@ -255,7 +246,7 @@ export async function generateCivicAnswer(
 ): Promise<AIChatResponse> {
   const mode = options.mode ?? "Simple";
 
-  if (!getGeminiApiKey()) {
+  if (!getConfiguredGeminiApiKey()) {
     return buildFallbackAnswer(question, mode);
   }
 
@@ -289,7 +280,7 @@ Return JSON only with this shape:
 }
 
 export async function generateQuizFromAnswer(answer: string): Promise<GeneratedQuiz> {
-  if (!getGeminiApiKey()) {
+  if (!getConfiguredGeminiApiKey()) {
     return {
       title: "Civic Learning Check",
       questions: [
@@ -375,7 +366,7 @@ export async function generateQuizFromTopic(
     ? `${options.sourceTitle} Check`
     : "Civic Learning Check";
 
-  if (!getGeminiApiKey()) {
+  if (!getConfiguredGeminiApiKey()) {
     return {
       title: fallbackTitle,
       questions: [
@@ -471,7 +462,7 @@ Make 3 to 5 questions. Keep all questions neutral and educational. Do not mentio
 }
 
 export async function simplifyAnswer(answer: string): Promise<AIChatResponse> {
-  if (!getGeminiApiKey()) {
+  if (!getConfiguredGeminiApiKey()) {
     return {
       text: `${answer}\n\nIn simpler terms: check the official steps, follow the local instructions, and ask your election authority if anything is unclear.`,
       suggestedFollowUps: fallbackFollowUps,
@@ -500,7 +491,7 @@ export async function translateAnswer(
   answer: string,
   targetLanguage: string,
 ): Promise<AIChatResponse> {
-  if (!getGeminiApiKey()) {
+  if (!getConfiguredGeminiApiKey()) {
     return {
       text: answer,
       suggestedFollowUps: fallbackFollowUps,
@@ -528,7 +519,7 @@ ${answer}
 export async function classifyElectionClaim(
   claim: string,
 ): Promise<ElectionClaimClassification> {
-  if (!getGeminiApiKey()) {
+  if (!getConfiguredGeminiApiKey()) {
     return buildLocalClaimFallback(claim);
   }
 

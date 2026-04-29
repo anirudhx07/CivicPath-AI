@@ -17,13 +17,8 @@ export const BottomNav: React.FC<BottomNavProps> = ({ currentScreen, onNavigate 
     { screen: AppScreen.PROFILE, label: "Profile", icon: User },
   ];
 
-  const mainScreens = [AppScreen.HOME, AppScreen.TIMELINE, AppScreen.AI_GUIDE, AppScreen.LEARN, AppScreen.PROFILE];
-  if (!mainScreens.includes(currentScreen) && currentScreen !== AppScreen.SAVED && currentScreen !== AppScreen.NOTIFICATIONS) {
-    return null;
-  }
-
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-paper border-t border-ink z-50 flex justify-around items-center px-4 pb-4 pt-3 h-20">
+    <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-paper border-t border-ink z-50 flex justify-between items-center px-2 pt-2 pb-[calc(0.75rem+env(safe-area-inset-bottom))] h-[var(--mobile-bottom-nav-height)]">
       {tabs.map((tab) => {
         const Icon = tab.icon;
         const isActive = currentScreen === tab.screen;
@@ -32,7 +27,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ currentScreen, onNavigate 
             key={tab.screen}
             onClick={() => onNavigate(tab.screen)}
             className={cn(
-              "flex flex-col items-center justify-center transition-all px-3 py-1 border-t-2 border-transparent",
+              "min-w-11 min-h-14 flex-1 max-w-[4.5rem] flex flex-col items-center justify-center transition-all px-1 py-1 border-t-2 border-transparent",
               isActive ? "text-accent border-accent" : "text-muted"
             )}
           >

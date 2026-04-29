@@ -7,7 +7,7 @@ interface BadgesScreenProps {
 }
 
 export const BadgesScreen = ({ user, onBack }: BadgesScreenProps) => (
-    <div className="min-h-screen pt-20 px-8 pb-32 max-w-4xl mx-auto w-full">
+    <div className="screen-shell screen-shell-md min-h-screen">
         <button onClick={onBack} className="flex items-center gap-2 text-ink font-bold mb-12 uppercase text-[10px] tracking-widest border-b-2 border-ink pb-1 w-fit">
             <span className="material-symbols-outlined text-sm">arrow_back</span> Return
         </button>
@@ -18,7 +18,7 @@ export const BadgesScreen = ({ user, onBack }: BadgesScreenProps) => (
             {BADGES.map(badge => {
                 const isEarned = user.badges.includes(badge.id);
                 return (
-                    <div key={badge.id} className={`p-8 border flex flex-col items-center text-center transition-all ${
+                    <div key={badge.id} className={`screen-card p-6 sm:p-8 border flex flex-col items-center text-center transition-all ${
                         isEarned ? "bg-white border-ink shadow-lg" : "bg-paper/30 border-border opacity-40 grayscale"
                     }`}>
                         <div className={`w-20 h-20 border flex items-center justify-center mb-6 ${

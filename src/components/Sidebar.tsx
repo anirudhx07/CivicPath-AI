@@ -25,7 +25,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentScreen, onNavigate }) =
   ];
 
   return (
-    <aside className="hidden md:flex flex-col w-64 h-screen sticky top-0 bg-paper border-r border-ink p-8">
+    <aside className="hidden lg:flex flex-col w-64 h-screen sticky top-0 bg-paper border-r border-ink p-8 shrink-0 overflow-y-auto">
       <div className="flex items-center gap-3 mb-12 py-4 border-b-2 border-ink">
         <h1 className="text-2xl font-serif italic font-bold tracking-tight text-ink leading-none">CivicPath<br/>AI</h1>
       </div>

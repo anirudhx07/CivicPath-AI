@@ -8,7 +8,7 @@ import {
   setDoc,
   type Firestore,
 } from "firebase/firestore";
-import type { Language, SavedItem, UserRole } from "../types";
+import type { AccessibilitySettings, Language, SavedItem, UserRole } from "../types";
 import { db, firebaseSetupError } from "./firebase";
 
 export interface FirestoreUserProfile {
@@ -18,6 +18,7 @@ export interface FirestoreUserProfile {
   photoURL: string | null;
   role: UserRole;
   language: Language;
+  accessibilitySettings?: AccessibilitySettings;
   createdAt?: unknown;
   updatedAt?: unknown;
 }
@@ -82,6 +83,7 @@ export async function createOrUpdateUserProfile(
       photoURL: profile.photoURL,
       role: profile.role,
       language: profile.language,
+      accessibilitySettings: profile.accessibilitySettings,
       ...timestampFields,
     },
     { merge: true },

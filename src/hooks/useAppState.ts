@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback, type Dispatch, type SetStateAction } from "react";
 import { AppScreen } from "../types";
 import type {
+  AccessibilitySettings,
   ActiveQuiz,
   Language,
   Lesson,
@@ -56,6 +57,16 @@ function buildMockQuiz(): ActiveQuiz {
     questions: QUIZ_QUESTIONS,
   };
 }
+
+const defaultAccessibilitySettings: AccessibilitySettings = {
+  largeText: false,
+  highContrast: false,
+  voiceExplanations: false,
+  readAnswersAloud: false,
+  reduceAnimations: false,
+  simpleLanguage: false,
+  dyslexiaFriendlyFont: false,
+};
 
 const getUnlockedBadges = ({
   lessonsCompleted,
@@ -125,6 +136,7 @@ function buildDefaultUser(): UserProfile {
       readinessScore,
     }),
     savedItems: [],
+    accessibilitySettings: defaultAccessibilitySettings,
   };
 }
 
@@ -153,6 +165,10 @@ function buildInitialUser(): UserProfile {
     quizHistory: storedUser.quizHistory ?? defaultUser.quizHistory,
     badges: storedUser.badges ?? defaultUser.badges,
     savedItems: storedUser.savedItems ?? defaultUser.savedItems,
+    accessibilitySettings: {
+      ...defaultAccessibilitySettings,
+      ...storedUser.accessibilitySettings,
+    },
   };
 }
 
@@ -186,6 +202,7 @@ export interface UseAppStateReturn {
     quizzes: string[],
     quizScores?: Record<string, number>,
   ) => void;
+  updateAccessibilitySettings: (settings: Partial<AccessibilitySettings>) => void;
 
   // Screen-specific actions
   openLesson: (lessonId: string) => void;
@@ -277,6 +294,7 @@ export function useAppState(): UseAppStateReturn {
           photoURL: user.avatarUrl,
           role: user.role,
           language: user.language,
+          accessibilitySettings: user.accessibilitySettings,
         });
 
         const [profile, progress] = await Promise.all([
@@ -304,6 +322,11 @@ export function useAppState(): UseAppStateReturn {
             quizzesCompleted: progress?.quizzesCompleted ?? prev.quizzesCompleted,
             quizScores: progress?.quizScores ?? prev.quizScores,
             badges: progress?.badges ?? prev.badges,
+            accessibilitySettings: {
+              ...defaultAccessibilitySettings,
+              ...prev.accessibilitySettings,
+              ...profile?.accessibilitySettings,
+            },
           };
         });
       } catch (error) {
@@ -332,6 +355,7 @@ export function useAppState(): UseAppStateReturn {
     user.language,
     user.name,
     user.role,
+    user.accessibilitySettings,
     user.uid,
   ]);
 
@@ -360,6 +384,7 @@ export function useAppState(): UseAppStateReturn {
       photoURL: user.avatarUrl,
       role: user.role,
       language: user.language,
+      accessibilitySettings: user.accessibilitySettings,
       progress,
     });
 
@@ -379,6 +404,7 @@ export function useAppState(): UseAppStateReturn {
         photoURL: user.avatarUrl,
         role: user.role,
         language: user.language,
+        accessibilitySettings: user.accessibilitySettings,
       }),
       saveUserProgress(user.uid, progress),
     ])
@@ -394,6 +420,7 @@ export function useAppState(): UseAppStateReturn {
     user.email,
     user.isAuthenticated,
     user.language,
+    user.accessibilitySettings,
     user.lessonsCompleted,
     user.name,
     user.quizScores,
@@ -452,6 +479,16 @@ export function useAppState(): UseAppStateReturn {
 
   const setRole = useCallback((role: UserRole) => {
     setUser((prev) => ({ ...prev, role }));
+  }, []);
+
+  const updateAccessibilitySettings = useCallback((settings: Partial<AccessibilitySettings>) => {
+    setUser((prev) => ({
+      ...prev,
+      accessibilitySettings: {
+        ...prev.accessibilitySettings,
+        ...settings,
+      },
+    }));
   }, []);
 
   const setAuthenticatedUser = useCallback((authUser: AuthUser) => {
@@ -640,6 +677,7 @@ export function useAppState(): UseAppStateReturn {
     setLanguage,
     setRole,
     updateProgress,
+    updateAccessibilitySettings,
     startQuiz,
     openLesson,
     openTimelineStep,

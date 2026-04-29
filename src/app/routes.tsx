@@ -47,6 +47,7 @@ export function renderScreen(
     setLanguage,
     setRole,
     updateProgress,
+    updateAccessibilitySettings,
     setAuthenticatedUser,
     setGuestUser,
     openLesson,
@@ -59,7 +60,7 @@ export function renderScreen(
 
   switch (currentScreen) {
     case AppScreen.SPLASH:
-      return <SplashScreen />;
+      return <SplashScreen reduceAnimations={user.accessibilitySettings.reduceAnimations} />;
 
     case AppScreen.LANGUAGE:
       return (
@@ -76,6 +77,7 @@ export function renderScreen(
         <OnboardingScreen
           onNext={() => navigateTo(AppScreen.ROLE_SELECTION)}
           onSkip={() => navigateTo(AppScreen.SIGN_IN)}
+          reduceAnimations={user.accessibilitySettings.reduceAnimations}
         />
       );
 
@@ -122,6 +124,7 @@ export function renderScreen(
           onNavigate={navigateTo}
           onSaveAnswer={saveItem}
           onStartQuiz={startQuiz}
+          accessibilitySettings={user.accessibilitySettings}
         />
       );
 
@@ -182,7 +185,13 @@ export function renderScreen(
       );
 
     case AppScreen.QUIZ_QUESTION:
-      return <QuizQuestionScreen activeQuiz={state.activeQuiz} onComplete={completeQuiz} />;
+      return (
+        <QuizQuestionScreen
+          activeQuiz={state.activeQuiz}
+          accessibilitySettings={user.accessibilitySettings}
+          onComplete={completeQuiz}
+        />
+      );
 
     case AppScreen.QUIZ_RESULT:
       return (
@@ -209,6 +218,7 @@ export function renderScreen(
       return (
         <LessonDetailScreen
           lesson={selectedLesson}
+          accessibilitySettings={user.accessibilitySettings}
           onBack={goBack}
           onComplete={(id) =>
             updateProgress(
@@ -224,7 +234,13 @@ export function renderScreen(
       return <TimelineDetailScreen step={selectedTimelineStep} onBack={goBack} />;
 
     case AppScreen.ACCESSIBILITY:
-      return <AccessibilityScreen onBack={goBack} />;
+      return (
+        <AccessibilityScreen
+          settings={user.accessibilitySettings}
+          onChange={updateAccessibilitySettings}
+          onBack={goBack}
+        />
+      );
 
     case AppScreen.TEACHER_TOOLKIT:
       return <TeacherToolkitScreen onBack={goBack} />;

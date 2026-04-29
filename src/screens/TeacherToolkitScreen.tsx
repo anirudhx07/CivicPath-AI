@@ -3,13 +3,13 @@ interface TeacherToolkitScreenProps {
 }
 
 export const TeacherToolkitScreen = ({ onBack }: TeacherToolkitScreenProps) => (
-    <div className="min-h-screen pt-20 px-8 pb-32 max-w-4xl mx-auto w-full">
+    <div className="screen-shell screen-shell-md min-h-screen">
         <button onClick={onBack} className="flex items-center gap-2 text-ink font-bold mb-12 uppercase text-[10px] tracking-widest border-b-2 border-ink pb-1">
             <span className="material-symbols-outlined text-sm">arrow_back</span> Return
         </button>
-        <div className="p-12 border border-ink mb-12 flex flex-col md:flex-row gap-10 items-center">
-            <div className="flex-1">
-                <h2 className="text-4xl font-serif italic font-bold mb-4">Classroom Archives</h2>
+        <div className="screen-card p-6 sm:p-8 lg:p-12 border border-ink mb-12 flex flex-col md:flex-row gap-8 md:gap-10 items-center">
+            <div className="flex-1 min-w-0">
+                <h2 className="text-3xl sm:text-4xl font-serif italic font-bold mb-4 break-words">Classroom Archives</h2>
                 <p className="text-muted leading-relaxed">Curated tools and academic resources designed for multi-user classroom environments.</p>
             </div>
             <div className="w-32 h-32 border-2 border-ink text-ink flex items-center justify-center shrink-0">
@@ -23,7 +23,7 @@ export const TeacherToolkitScreen = ({ onBack }: TeacherToolkitScreenProps) => (
                 { title: "Dialectic Prompts", icon: "forum", desc: "Analytical questions to foster civil discourse in academic settings." },
                 { title: "Printable Briefs", icon: "print", desc: "Hard-copy versions of current election roadmap steps." },
             ].map(it => (
-                <button key={it.title} className="p-8 border border-border text-left group hover:border-ink transition-all flex flex-col h-full bg-paper/30">
+                <button key={it.title} className="screen-card p-6 sm:p-8 border border-border text-left group hover:border-ink transition-all flex flex-col h-full bg-paper/30">
                     <span className="material-symbols-outlined text-muted group-hover:text-ink mb-6">{it.icon}</span>
                     <h4 className="text-xl font-serif italic mb-2 tracking-tight">{it.title}</h4>
                     <p className="text-[11px] text-muted uppercase font-bold tracking-widest leading-relaxed mb-auto">{it.desc}</p>

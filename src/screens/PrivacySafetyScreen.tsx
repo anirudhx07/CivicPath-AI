@@ -3,11 +3,11 @@ interface PrivacySafetyScreenProps {
 }
 
 export const PrivacySafetyScreen = ({ onBack }: PrivacySafetyScreenProps) => (
-    <div className="min-h-screen pt-20 px-8 pb-20 max-w-2xl mx-auto w-full">
+    <div className="screen-shell screen-shell-sm min-h-screen">
         <button onClick={onBack} className="flex items-center gap-2 text-ink font-bold mb-12 uppercase text-[10px] tracking-widest border-b-2 border-ink pb-1"><span className="material-symbols-outlined text-sm">arrow_back</span> Records</button>
         <h2 className="text-4xl font-serif italic font-bold mb-8">Neutrality Audit</h2>
         <div className="space-y-12">
-            <div className="p-8 border-2 border-ink space-y-6">
+            <div className="screen-card p-5 sm:p-8 border-2 border-ink space-y-6">
                 <h3 className="text-2xl font-serif italic font-bold">The CivicPath AI Covenant</h3>
                 <p className="text-lg font-serif italic text-muted leading-relaxed">
                     CivicPath AI is strictly an educational tool. We do not store political preferences, recommend candidates, or influence voting choices. Our data comes from official, non-partisan election commissions.

@@ -15,7 +15,7 @@ export const RoleSelectionScreen = ({ user, onBack, onSelect }: RoleSelectionScr
     ];
 
     return (
-        <div className="min-h-screen px-8 py-16 flex flex-col max-w-2xl mx-auto w-full bg-paper">
+        <div className="min-h-screen px-4 sm:px-8 py-12 sm:py-16 pb-[calc(3rem+env(safe-area-inset-bottom))] flex flex-col max-w-2xl mx-auto w-full bg-paper">
             <button onClick={onBack} className="flex items-center gap-2 text-ink font-bold mb-12 uppercase text-[10px] tracking-widest border-b-2 border-ink pb-1 w-fit">
                 <span className="material-symbols-outlined text-sm">arrow_back</span> Return
             </button>
@@ -26,7 +26,7 @@ export const RoleSelectionScreen = ({ user, onBack, onSelect }: RoleSelectionScr
                     <button
                         key={r.id}
                         onClick={() => onSelect(r.id)}
-                        className={`p-8 border-2 text-left transition-all relative ${
+                        className={`p-6 sm:p-8 border-2 text-left transition-all relative ${
                             user.role === r.id ? "border-ink bg-white shadow-xl" : "border-border bg-white/50 hover:border-muted"
                         }`}
                     >
@@ -41,7 +41,7 @@ export const RoleSelectionScreen = ({ user, onBack, onSelect }: RoleSelectionScr
             </div>
             <button 
                 onClick={() => onSelect(user.role)}
-                className="mt-16 w-full py-6 bg-ink text-white font-bold uppercase text-[10px] tracking-[0.3em]"
+                className="mt-16 w-full py-6 bg-ink text-white font-bold uppercase text-[10px] tracking-widest sm:tracking-[0.3em]"
             >
                 Continue to Archive
             </button>

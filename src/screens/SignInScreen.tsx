@@ -1,4 +1,4 @@
-import { firebaseConfigStatus } from "../services/firebase";
+import { envStatus } from "../services/env";
 
 interface SignInScreenProps {
   loading: boolean;
@@ -14,11 +14,11 @@ export const SignInScreen = ({
   signInWithGoogle,
   onGuest,
 }: SignInScreenProps) => {
-  const showFirebaseSetup = !firebaseConfigStatus.isConfigured;
+  const showFirebaseSetup = !envStatus.firebase.isConfigured;
 
   return (
-    <div className="min-h-screen flex flex-col p-8 items-center justify-center bg-paper">
-      <div className="w-full max-w-md bg-white p-12 border-2 border-ink shadow-[20px_20px_0px_0px_rgba(0,0,0,0.05)] text-center">
+    <div className="min-h-screen flex flex-col p-4 sm:p-8 py-[calc(1rem+env(safe-area-inset-top))] pb-[calc(1rem+env(safe-area-inset-bottom))] items-center justify-center bg-paper">
+      <div className="w-full max-w-md bg-white p-6 sm:p-12 border-2 border-ink shadow-[10px_10px_0px_0px_rgba(0,0,0,0.05)] sm:shadow-[20px_20px_0px_0px_rgba(0,0,0,0.05)] text-center">
         <div className="w-20 h-20 border-2 border-ink mx-auto flex items-center justify-center mb-10">
           <span className="material-symbols-outlined text-4xl text-ink">verified</span>
         </div>
@@ -53,16 +53,34 @@ export const SignInScreen = ({
         </div>
 
         {showFirebaseSetup && (
-          <div className="mt-6 p-5 border border-border bg-paper text-left">
-            <p className="text-xs font-bold text-ink mb-3">Firebase is not configured.</p>
-            <p className="text-[11px] leading-relaxed text-muted">
-              Missing keys: {firebaseConfigStatus.missingKeys.join(", ")}.
+          <section className="mt-6 p-6 border-2 border-ink bg-paper text-left">
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 border border-ink bg-white flex items-center justify-center shrink-0">
+                <span className="material-symbols-outlined text-ink text-lg">build</span>
+              </div>
+              <div>
+                <p className="text-xs font-black uppercase tracking-widest text-ink mb-2">
+                  Google Login Setup Required
+                </p>
+                <p className="text-[11px] leading-relaxed text-muted">
+                  Firebase config is missing, so Google login and Firestore sync are unavailable.
+                  Guest mode still works.
+                </p>
+              </div>
+            </div>
+            <div className="mt-5 border border-border bg-white p-4">
+              <p className="text-[10px] uppercase font-black tracking-widest text-muted mb-2">
+                Missing Firebase Keys
+              </p>
+              <p className="text-[11px] leading-relaxed text-ink break-words">
+                {envStatus.firebase.missingKeys.join(", ")}
+              </p>
+            </div>
+            <p className="text-[11px] leading-relaxed text-muted mt-4">
+              Create a `.env` file in the project root, copy values from `.env.example`, fill the
+              `VITE_FIREBASE_*` values, then restart `npm run dev`.
             </p>
-            <p className="text-[11px] leading-relaxed text-muted mt-2">
-              Create a .env file in the project root, copy values from .env.example, then restart
-              npm run dev.
-            </p>
-          </div>
+          </section>
         )}
 
         {error && (

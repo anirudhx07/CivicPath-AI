@@ -1,5 +1,5 @@
-import { useState } from "react";
-import type { ActiveQuiz, QuizAnswerReview, UserProfile } from "../types";
+import { useEffect, useState } from "react";
+import type { AccessibilitySettings, ActiveQuiz, QuizAnswerReview, UserProfile } from "../types";
 import { QUIZ_QUESTIONS } from "../data/quizQuestions";
 import { LESSONS } from "../data/lessons";
 import { TIMELINE_STEPS } from "../data/timeline";
@@ -84,7 +84,7 @@ export const QuizStartScreen = ({ onStart, onBack }: QuizStartScreenProps) => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col p-8 max-w-lg mx-auto w-full pt-20">
+    <div className="screen-shell screen-shell-sm min-h-screen flex flex-col">
       <button
         onClick={onBack}
         className="flex items-center gap-2 text-ink font-bold mb-16 uppercase text-[10px] tracking-widest border-b-2 border-ink pb-1 w-fit"
@@ -179,7 +179,7 @@ export const QuizStartScreen = ({ onStart, onBack }: QuizStartScreenProps) => {
       </div>
       <button
         onClick={() => onStart()}
-        className="w-full py-6 bg-ink text-white font-bold uppercase text-xs tracking-[0.2em] hover:bg-black transition-colors mt-12"
+        className="w-full py-6 bg-ink text-white font-bold uppercase text-xs tracking-widest sm:tracking-[0.2em] hover:bg-black transition-colors mt-12"
       >
         Begin Standard Examination
       </button>
@@ -189,10 +189,15 @@ export const QuizStartScreen = ({ onStart, onBack }: QuizStartScreenProps) => {
 
 interface QuizQuestionScreenProps {
   activeQuiz: ActiveQuiz;
+  accessibilitySettings: AccessibilitySettings;
   onComplete: (score: number, answers: QuizAnswerReview[]) => void;
 }
 
-export const QuizQuestionScreen = ({ activeQuiz, onComplete }: QuizQuestionScreenProps) => {
+export const QuizQuestionScreen = ({
+  activeQuiz,
+  accessibilitySettings,
+  onComplete,
+}: QuizQuestionScreenProps) => {
   const [idx, setIdx] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
   const [answers, setAnswers] = useState<QuizAnswerReview[]>([]);
@@ -200,6 +205,17 @@ export const QuizQuestionScreen = ({ activeQuiz, onComplete }: QuizQuestionScree
   const q = activeQuiz.questions[idx] ?? QUIZ_QUESTIONS[0];
   const answered = selected !== null;
   const isCorrect = selected === q.correctIndex;
+
+  useEffect(() => {
+    if (!answered || !accessibilitySettings.voiceExplanations || !("speechSynthesis" in window)) {
+      return;
+    }
+
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(q.explanation);
+    utterance.rate = accessibilitySettings.simpleLanguage ? 0.88 : 1;
+    window.speechSynthesis.speak(utterance);
+  }, [accessibilitySettings.simpleLanguage, accessibilitySettings.voiceExplanations, answered, q.explanation]);
 
   const next = () => {
     if (selected === null) return;
@@ -223,12 +239,12 @@ export const QuizQuestionScreen = ({ activeQuiz, onComplete }: QuizQuestionScree
   };
 
   return (
-    <div className="min-h-screen flex flex-col p-8 max-w-2xl mx-auto w-full pt-20">
-      <div className="flex justify-between items-center mb-16 border-b border-ink pb-4">
+    <div className="screen-shell screen-shell-sm min-h-screen flex flex-col">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-12 sm:mb-16 border-b border-ink pb-4">
         <span className="text-[10px] font-black uppercase tracking-[0.3em]">
           Module {idx + 1} of {activeQuiz.questions.length}
         </span>
-        <div className="h-1 flex-1 bg-border mx-8">
+        <div className="h-1 w-full sm:flex-1 bg-border sm:mx-8">
           <div
             className="h-full bg-ink transition-all"
             style={{ width: `${((idx + 1) / activeQuiz.questions.length) * 100}%` }}
@@ -249,7 +265,7 @@ export const QuizQuestionScreen = ({ activeQuiz, onComplete }: QuizQuestionScree
                 key={opt}
                 onClick={() => !answered && setSelected(i)}
                 disabled={answered}
-                className={`w-full p-6 text-left border flex justify-between items-center transition-all ${
+                className={`w-full p-5 sm:p-6 text-left border flex justify-between items-center gap-4 transition-all ${
                   showCorrect
                     ? "border-green-700 bg-green-50 text-green-800"
                     : showWrong
@@ -259,8 +275,8 @@ export const QuizQuestionScreen = ({ activeQuiz, onComplete }: QuizQuestionScree
                         : "border-border bg-white hover:border-ink"
                 }`}
               >
-                <span className="font-medium text-sm">{opt}</span>
-                <div className="text-[10px] uppercase font-black tracking-widest">
+                <span className="font-medium text-sm min-w-0 break-words">{opt}</span>
+                <div className="text-[10px] uppercase font-black tracking-widest shrink-0">
                   {showCorrect ? "Correct" : showWrong ? "Wrong" : selected === i ? "Selected" : ""}
                 </div>
               </button>
@@ -306,7 +322,7 @@ export const QuizResultScreen = ({
   onHome,
   onReview,
 }: QuizResultScreenProps) => (
-  <div className="min-h-screen flex flex-col p-8 items-center justify-center text-center max-w-lg mx-auto">
+  <div className="screen-shell screen-shell-sm min-h-screen flex flex-col items-center justify-center text-center">
     <div className="w-48 h-48 border-2 border-ink flex items-center justify-center mb-12">
       <span className="material-symbols-outlined text-7xl text-ink">workspace_premium</span>
     </div>
@@ -338,19 +354,19 @@ export const QuizResultScreen = ({
     <div className="w-full space-y-4">
       <button
         onClick={onHome}
-        className="w-full py-6 bg-ink text-white font-bold uppercase text-[10px] tracking-[0.2em]"
+        className="w-full py-6 bg-ink text-white font-bold uppercase text-[10px] tracking-widest sm:tracking-[0.2em]"
       >
         Return to Desk
       </button>
       <button
         onClick={onReview}
-        className="w-full py-6 border border-ink text-ink font-bold uppercase text-[10px] tracking-[0.2em] hover:bg-paper"
+        className="w-full py-6 border border-ink text-ink font-bold uppercase text-[10px] tracking-widest sm:tracking-[0.2em] hover:bg-paper"
       >
         Review Answers
       </button>
       <button
         onClick={onRetry}
-        className="w-full py-6 border border-border text-muted font-bold uppercase text-[10px] tracking-[0.2em] hover:bg-paper"
+        className="w-full py-6 border border-border text-muted font-bold uppercase text-[10px] tracking-widest sm:tracking-[0.2em] hover:bg-paper"
       >
         Re-Examine
       </button>
@@ -365,7 +381,7 @@ interface QuizReviewScreenProps {
 }
 
 export const QuizReviewScreen = ({ answers, onBack, onHome }: QuizReviewScreenProps) => (
-  <div className="min-h-screen p-8 max-w-3xl mx-auto w-full pt-20 pb-32">
+  <div className="screen-shell screen-shell-md min-h-screen">
     <button
       onClick={onBack}
       className="flex items-center gap-2 text-ink font-bold mb-12 uppercase text-[10px] tracking-widest border-b-2 border-ink pb-1"
@@ -380,9 +396,9 @@ export const QuizReviewScreen = ({ answers, onBack, onHome }: QuizReviewScreenPr
 
     <div className="space-y-6">
       {answers.map((answer, index) => (
-        <section key={`${answer.question.id}-${index}`} className="border border-border bg-white p-8">
-          <div className="flex justify-between gap-4 border-b border-border pb-4 mb-6">
-            <h2 className="font-serif italic font-bold text-xl">
+        <section key={`${answer.question.id}-${index}`} className="screen-card border border-border bg-white p-5 sm:p-8">
+          <div className="flex flex-col sm:flex-row sm:justify-between gap-4 border-b border-border pb-4 mb-6">
+            <h2 className="font-serif italic font-bold text-xl break-words">
               {index + 1}. {answer.question.text}
             </h2>
             <span
@@ -416,7 +432,7 @@ export const QuizReviewScreen = ({ answers, onBack, onHome }: QuizReviewScreenPr
 
     <button
       onClick={onHome}
-      className="w-full py-6 bg-ink text-white font-bold uppercase text-[10px] tracking-[0.2em] mt-12"
+      className="w-full py-6 bg-ink text-white font-bold uppercase text-[10px] tracking-widest sm:tracking-[0.2em] mt-12"
     >
       Return to Desk
     </button>

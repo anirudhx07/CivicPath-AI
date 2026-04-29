@@ -9,28 +9,28 @@ interface SearchScreenProps {
 export const SearchScreen = ({ onBack, onNavigate }: SearchScreenProps) => {
     const [query, setQuery] = useState("");
     return (
-        <div className="min-h-screen pt-20 px-8 bg-paper">
-            <div className="max-w-4xl mx-auto py-12">
-                <div className="flex gap-8 items-center mb-16">
-                    <div className="flex-1 bg-white border border-ink flex items-center p-6 gap-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,0.05)]">
+        <div className="min-h-screen bg-paper">
+            <div className="screen-shell screen-shell-md">
+                <div className="flex flex-col sm:flex-row gap-6 sm:gap-8 sm:items-center mb-16">
+                    <div className="flex-1 bg-white border border-ink flex items-center p-4 sm:p-6 gap-4 sm:gap-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,0.05)] min-w-0">
                         <span className="material-symbols-outlined text-muted">search</span>
                         <input 
                             autoFocus
                             value={query}
                             onChange={e => setQuery(e.target.value)}
                             placeholder="Search archives, myths, or curricula..." 
-                            className="bg-transparent border-none w-full focus:ring-0 outline-none font-serif italic text-xl" 
+                            className="bg-transparent border-none w-full min-w-0 focus:ring-0 outline-none font-serif italic text-lg sm:text-xl" 
                         />
                     </div>
-                    <button onClick={onBack} className="text-[10px] font-black uppercase tracking-widest text-ink border-b-2 border-ink pb-1">Terminate Search</button>
+                    <button onClick={onBack} className="text-[10px] font-black uppercase tracking-widest text-ink border-b-2 border-ink pb-1 w-fit">Terminate Search</button>
                 </div>
                 
                 {query ? (
                     <div className="space-y-12">
                         <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-muted border-b border-border pb-4">Query Results</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                           <button onClick={() => onNavigate(AppScreen.LESSON_DETAIL)} className="p-8 bg-white border border-border group hover:border-ink text-left transition-all">
-                               <div className="flex justify-between items-start mb-6">
+                           <button onClick={() => onNavigate(AppScreen.LESSON_DETAIL)} className="screen-card p-6 sm:p-8 bg-white border border-border group hover:border-ink text-left transition-all">
+                               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-6">
                                    <div className="w-10 h-10 border border-ink flex items-center justify-center font-bold text-xs">01</div>
                                    <span className="pill">Issue 01</span>
                                </div>

@@ -55,22 +55,23 @@ The solution is designed around a neutral civic education assistant persona. It 
 - Vite
 
 ## Firebase Setup
-1. Go to the Firebase Console.
+1. Go to the Firebase Console: https://console.firebase.google.com/
 2. Create a Firebase project or open an existing one.
 3. Add a Web App to the project.
 4. Copy the Firebase config values from the Web App settings.
 5. Create a `.env` file in the project root, at the same level as `package.json` and `vite.config.ts`.
-6. Copy the keys from `.env.example` into `.env` and fill in the `VITE_FIREBASE_*` values.
-7. Go to Firebase Authentication.
-8. Enable the Google provider.
-9. Add `localhost` and your deployed domain to Authorized domains if needed.
-10. Restart the dev server after editing `.env`.
+6. Copy the exact keys from `.env.example` into `.env`.
+7. Fill in the `VITE_FIREBASE_*` values from the Firebase Web App config.
+8. Go to Firebase Authentication.
+9. Enable the Google provider.
+10. Add `localhost` and your deployed domain to Authorized domains if needed.
+11. Restart the dev server after editing `.env`.
 
 ```bash
 cp .env.example .env
 ```
 
-Required Vite environment variables:
+Your `.env` file should use this exact shape:
 
 ```bash
 VITE_FIREBASE_API_KEY=
@@ -82,7 +83,28 @@ VITE_FIREBASE_APP_ID=
 VITE_GEMINI_API_KEY=
 ```
 
-Firebase is initialized from `src/services/firebase.ts` using `import.meta.env`. Do not use `process.env` in frontend code. If Firebase variables are missing, Google login is unavailable, but guest mode still works.
+Firebase is initialized from `src/services/firebase.ts` using Vite's `import.meta.env`. Do not use `process.env` in frontend code. If Firebase variables are missing, Google login and Firestore sync are unavailable, but guest mode still works.
+
+## Gemini Setup
+1. Create or use a Gemini API key from Google AI Studio.
+2. Add it to the same project-root `.env` file:
+
+```bash
+VITE_GEMINI_API_KEY=your_gemini_api_key_here
+```
+
+If `VITE_GEMINI_API_KEY` is missing, AI Guide, quizzes, and Myth Buster continue to work with local fallback responses.
+
+## Environment Validation
+The app validates configuration in `src/services/env.ts`.
+
+In development, missing Firebase or Gemini values show a non-blocking setup banner. When a user opens a feature that requires missing Firebase config, such as Google login, the app shows a setup panel with the missing keys and keeps guest login available.
+
+After changing `.env`, always restart the Vite dev server:
+
+```bash
+npm run dev
+```
 
 ## Run Locally
 ```bash

@@ -6,7 +6,7 @@ import {
   signInWithGoogle as signInWithGoogleService,
   signOutUser,
 } from "../services/authService";
-import { firebaseConfigStatus } from "../services/firebase";
+import { envStatus } from "../services/env";
 
 export interface UseAuthReturn {
   user: AuthUser | null;
@@ -72,8 +72,8 @@ export function useAuth(): UseAuthReturn {
     user,
     loading,
     error,
-    isFirebaseConfigured: firebaseConfigStatus.isConfigured,
-    missingFirebaseKeys: firebaseConfigStatus.missingKeys,
+    isFirebaseConfigured: envStatus.firebase.isConfigured,
+    missingFirebaseKeys: envStatus.firebase.missingKeys,
     signInWithGoogle,
     signOut,
   };

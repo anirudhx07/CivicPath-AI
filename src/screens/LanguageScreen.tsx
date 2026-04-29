@@ -17,7 +17,7 @@ export const LanguageScreen = ({ onNext }: LanguageScreenProps) => {
     const [selected, setSelected] = useState<Language>("en");
 
     return (
-        <div className="min-h-screen px-8 py-12 flex flex-col max-w-lg mx-auto w-full bg-paper">
+        <div className="min-h-screen px-4 sm:px-8 py-10 sm:py-12 pb-[calc(3rem+env(safe-area-inset-bottom))] flex flex-col max-w-lg mx-auto w-full bg-paper">
             <div className="text-center mb-16">
                 <div className="w-20 h-20 border border-ink mx-auto mb-10 flex items-center justify-center">
                     <span className="material-symbols-outlined text-ink text-3xl">language</span>
@@ -36,7 +36,7 @@ export const LanguageScreen = ({ onNext }: LanguageScreenProps) => {
                     >
                         <div className="text-left">
                             <div className="font-serif italic text-lg">{l.label}</div>
-                            <div className={`text-[10px] uppercase font-bold tracking-widest mt-1 ${selected === l.id ? "text-paper/60" : "text-muted"}`}>{l.native}</div>
+                            <div className={`text-[10px] uppercase font-bold tracking-widest mt-1 break-words ${selected === l.id ? "text-paper/60" : "text-muted"}`}>{l.native}</div>
                         </div>
                         {selected === l.id && <span className="material-symbols-outlined text-paper text-sm">verified</span>}
                     </button>
@@ -44,7 +44,7 @@ export const LanguageScreen = ({ onNext }: LanguageScreenProps) => {
             </div>
             <button
                 onClick={() => onNext(selected)}
-                className="mt-auto w-full py-6 bg-ink text-white font-bold uppercase text-[10px] tracking-[0.3em] hover:bg-black transition-colors"
+                className="mt-auto w-full py-6 bg-ink text-white font-bold uppercase text-[10px] tracking-widest sm:tracking-[0.3em] hover:bg-black transition-colors"
             >
                 Confirm Setting
             </button>

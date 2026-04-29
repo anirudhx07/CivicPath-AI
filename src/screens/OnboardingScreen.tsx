@@ -3,24 +3,25 @@ import { motion } from "motion/react";
 interface OnboardingScreenProps {
   onNext: () => void;
   onSkip: () => void;
+  reduceAnimations: boolean;
 }
 
-export const OnboardingScreen = ({ onNext, onSkip }: OnboardingScreenProps) => {
+export const OnboardingScreen = ({ onNext, onSkip, reduceAnimations }: OnboardingScreenProps) => {
     return (
-        <div className="min-h-screen flex flex-col p-8 max-w-lg mx-auto w-full bg-paper">
+        <div className="min-h-screen flex flex-col p-4 sm:p-8 pb-[calc(2rem+env(safe-area-inset-bottom))] max-w-lg mx-auto w-full bg-paper">
             <div className="flex justify-end pt-4 mb-12">
                 <button onClick={onSkip} className="text-[10px] font-black uppercase tracking-widest text-muted border-b border-muted/30">Skip Briefing</button>
             </div>
             <div className="flex-1 flex flex-col items-center justify-center text-center">
-                <div className="w-48 h-48 border border-ink flex items-center justify-center mb-16 relative">
+                <div className="w-40 h-40 sm:w-48 sm:h-48 border border-ink flex items-center justify-center mb-12 sm:mb-16 relative">
                     <motion.div 
-                        animate={{ opacity: [0.1, 0.2, 0.1] }}
-                        transition={{ repeat: Infinity, duration: 4 }}
+                        animate={reduceAnimations ? { opacity: 0.16 } : { opacity: [0.1, 0.2, 0.1] }}
+                        transition={{ repeat: reduceAnimations ? 0 : Infinity, duration: reduceAnimations ? 0 : 4 }}
                         className="absolute inset-0 flex items-center justify-center"
                     >
-                        <span className="material-symbols-outlined text-[100px] text-ink">menu_book</span>
+                        <span className="material-symbols-outlined text-[84px] sm:text-[100px] text-ink">menu_book</span>
                     </motion.div>
-                    <span className="material-symbols-outlined text-[64px] text-ink z-10">smart_toy</span>
+                    <span className="material-symbols-outlined text-[56px] sm:text-[64px] text-ink z-10">smart_toy</span>
                 </div>
                 <div className="space-y-6 mb-16">
                     <h1 className="text-4xl font-serif italic font-bold">The Civic Assistant</h1>
@@ -42,7 +43,7 @@ export const OnboardingScreen = ({ onNext, onSkip }: OnboardingScreenProps) => {
                 </div>
                 <button 
                     onClick={onNext}
-                    className="w-full py-6 bg-ink text-white font-bold uppercase text-[10px] tracking-[0.3em] hover:bg-black transition-colors"
+                    className="w-full py-6 bg-ink text-white font-bold uppercase text-[10px] tracking-widest sm:tracking-[0.3em] hover:bg-black transition-colors"
                 >
                     Next Chapter
                 </button>

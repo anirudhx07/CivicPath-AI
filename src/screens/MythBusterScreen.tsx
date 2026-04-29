@@ -116,7 +116,7 @@ export const MythBusterScreen = ({
   const isSaved = savedItems.some((item) => item.id === savedId);
 
   return (
-    <div className="min-h-screen pt-20 px-8 pb-32 max-w-2xl mx-auto w-full">
+    <div className="screen-shell screen-shell-sm min-h-screen">
       <button
         onClick={onBack}
         className="flex items-center gap-2 text-ink font-bold mb-12 uppercase text-[10px] tracking-widest border-b-2 border-ink pb-1"
@@ -129,7 +129,7 @@ export const MythBusterScreen = ({
         requirements with your local election authority.
       </p>
 
-      <div className="border border-border p-8 mb-12">
+      <div className="screen-card border border-border p-5 sm:p-8 mb-12">
         <textarea
           value={input}
           onChange={(event) => setInput(event.target.value)}
@@ -162,7 +162,7 @@ export const MythBusterScreen = ({
       )}
 
       {result && !loading && (
-        <div className="border border-border p-8 bg-white">
+        <div className="screen-card border border-border p-5 sm:p-8 bg-white">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8 border-b border-border pb-4">
             <span className="pill bg-paper text-ink border border-border">Verification Report</span>
             <span
@@ -183,7 +183,7 @@ export const MythBusterScreen = ({
               ["The Truth", result.truth],
               ["Citizen Action", result.citizenAction],
             ].map(([title, content]) => (
-              <section key={title} className="bg-paper p-6 text-sm leading-relaxed border border-border">
+              <section key={title} className="bg-paper p-5 sm:p-6 text-sm leading-relaxed border border-border">
                 <h4 className="text-[10px] uppercase font-black tracking-widest text-ink mb-3">
                   {title}
                 </h4>
@@ -192,7 +192,7 @@ export const MythBusterScreen = ({
             ))}
 
             {result.relatedTopics.length > 0 && (
-              <section className="bg-paper p-6 border border-border">
+              <section className="bg-paper p-5 sm:p-6 border border-border">
                 <h4 className="text-[10px] uppercase font-black tracking-widest text-ink mb-4">
                   Related Topics
                 </h4>

@@ -50,6 +50,17 @@ export interface UserProfile {
   quizHistory: QuizResultRecord[];
   badges: string[];
   savedItems: SavedItem[];
+  accessibilitySettings: AccessibilitySettings;
+}
+
+export interface AccessibilitySettings {
+  largeText: boolean;
+  highContrast: boolean;
+  voiceExplanations: boolean;
+  readAnswersAloud: boolean;
+  reduceAnimations: boolean;
+  simpleLanguage: boolean;
+  dyslexiaFriendlyFont: boolean;
 }
 
 export interface ActiveQuiz {

@@ -54,7 +54,7 @@ export function getAuthErrorMessage(error: unknown): string {
       return "Popup was blocked. Please allow popups and try again.";
     case "auth/popup-closed-by-user":
     case "auth/cancelled-popup-request":
-      return "Google sign-in was cancelled.";
+      return "Google sign-in was cancelled because the popup was closed.";
     case "auth/unauthorized-domain":
       return "This domain is not authorized in Firebase Authentication settings.";
     case "auth/configuration-not-found":

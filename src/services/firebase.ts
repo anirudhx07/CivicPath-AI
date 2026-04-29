@@ -1,40 +1,11 @@
 import { getApp, getApps, initializeApp, type FirebaseApp } from "firebase/app";
 import { getAuth, type Auth } from "firebase/auth";
 import { getFirestore, type Firestore } from "firebase/firestore";
-
-const requiredFirebaseKeys = [
-  "VITE_FIREBASE_API_KEY",
-  "VITE_FIREBASE_AUTH_DOMAIN",
-  "VITE_FIREBASE_PROJECT_ID",
-  "VITE_FIREBASE_STORAGE_BUCKET",
-  "VITE_FIREBASE_MESSAGING_SENDER_ID",
-  "VITE_FIREBASE_APP_ID",
-] as const;
-
-type FirebaseEnvKey = (typeof requiredFirebaseKeys)[number];
-
-function readEnvValue(key: FirebaseEnvKey): string {
-  return import.meta.env[key]?.trim() ?? "";
-}
-
-function isMissingValue(value: string): boolean {
-  const normalized = value.toLowerCase();
-  return (
-    !value ||
-    normalized.startsWith("your_") ||
-    normalized.startsWith("your-") ||
-    normalized.startsWith("my_") ||
-    normalized.includes("replace_me")
-  );
-}
-
-const missingFirebaseKeys = requiredFirebaseKeys.filter((key) =>
-  isMissingValue(readEnvValue(key)),
-);
+import { envStatus, getFirebaseConfigValues } from "./env";
 
 const firebaseConfigStatus = {
-  isConfigured: missingFirebaseKeys.length === 0,
-  missingKeys: [...missingFirebaseKeys],
+  isConfigured: envStatus.firebase.isConfigured,
+  missingKeys: [...envStatus.firebase.missingKeys],
 };
 
 const firebaseSetupError = firebaseConfigStatus.isConfigured
@@ -48,17 +19,19 @@ let auth: Auth | null = null;
 let db: Firestore | null = null;
 
 if (firebaseConfigStatus.isConfigured) {
-  const firebaseConfig = {
-    apiKey: readEnvValue("VITE_FIREBASE_API_KEY"),
-    authDomain: readEnvValue("VITE_FIREBASE_AUTH_DOMAIN"),
-    projectId: readEnvValue("VITE_FIREBASE_PROJECT_ID"),
-    storageBucket: readEnvValue("VITE_FIREBASE_STORAGE_BUCKET"),
-    messagingSenderId: readEnvValue("VITE_FIREBASE_MESSAGING_SENDER_ID"),
-    appId: readEnvValue("VITE_FIREBASE_APP_ID"),
-  };
+  const firebaseValues = getFirebaseConfigValues();
 
   try {
-    app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+    app = getApps().length > 0
+      ? getApp()
+      : initializeApp({
+          apiKey: firebaseValues?.VITE_FIREBASE_API_KEY,
+          authDomain: firebaseValues?.VITE_FIREBASE_AUTH_DOMAIN,
+          projectId: firebaseValues?.VITE_FIREBASE_PROJECT_ID,
+          storageBucket: firebaseValues?.VITE_FIREBASE_STORAGE_BUCKET,
+          messagingSenderId: firebaseValues?.VITE_FIREBASE_MESSAGING_SENDER_ID,
+          appId: firebaseValues?.VITE_FIREBASE_APP_ID,
+        });
     auth = getAuth(app);
     db = getFirestore(app);
   } catch (error) {
@@ -72,6 +45,7 @@ if (firebaseConfigStatus.isConfigured) {
 }
 
 const isFirebaseConfigured = auth !== null && db !== null;
+const missingFirebaseKeys = firebaseConfigStatus.missingKeys;
 
 export {
   app,
