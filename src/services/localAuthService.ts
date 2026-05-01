@@ -22,6 +22,22 @@ function hasStorage(): boolean {
   return typeof window !== "undefined" && typeof window.localStorage !== "undefined";
 }
 
+function hasSessionStorage(): boolean {
+  return typeof window !== "undefined" && typeof window.sessionStorage !== "undefined";
+}
+
+function clearLegacyCurrentUser(): void {
+  if (!hasStorage()) {
+    return;
+  }
+
+  try {
+    localStorage.removeItem(CURRENT_USER_KEY);
+  } catch {
+    // Ignore storage cleanup failures; the app should still be able to render.
+  }
+}
+
 function readUsers(): LocalAuthUser[] {
   if (!hasStorage()) {
     return [];
@@ -49,12 +65,14 @@ function writeUsers(users: LocalAuthUser[]): boolean {
 }
 
 function writeCurrentUser(user: LocalAuthUser): boolean {
-  if (!hasStorage()) {
+  clearLegacyCurrentUser();
+
+  if (!hasSessionStorage()) {
     return false;
   }
 
   try {
-    localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(user));
+    sessionStorage.setItem(CURRENT_USER_KEY, JSON.stringify(user));
     return true;
   } catch {
     return false;
@@ -183,25 +201,35 @@ export function continueAsGuest(): AuthResult {
 }
 
 export function getCurrentUser(): LocalAuthUser | null {
-  if (!hasStorage()) {
+  clearLegacyCurrentUser();
+
+  if (!hasSessionStorage()) {
     return null;
   }
 
   try {
-    const raw = localStorage.getItem(CURRENT_USER_KEY);
+    const raw = sessionStorage.getItem(CURRENT_USER_KEY);
     return raw ? (JSON.parse(raw) as LocalAuthUser) : null;
   } catch {
     return null;
   }
 }
 
-export function logout(): { ok: true } | { ok: false; error: string } {
-  if (!hasStorage()) {
-    return { ok: false, error: "Browser storage is unavailable." };
+export function clearCurrentSession(): void {
+  if (hasSessionStorage()) {
+    try {
+      sessionStorage.removeItem(CURRENT_USER_KEY);
+    } catch {
+      // Ignore storage cleanup failures; logout still resets in-memory state.
+    }
   }
 
+  clearLegacyCurrentUser();
+}
+
+export function logout(): { ok: true } | { ok: false; error: string } {
   try {
-    localStorage.removeItem(CURRENT_USER_KEY);
+    clearCurrentSession();
     return { ok: true };
   } catch {
     return { ok: false, error: "Unable to end this session. Please try again." };

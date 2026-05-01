@@ -58,13 +58,15 @@ The solution is designed around a neutral civic education assistant persona. It 
 - Vite
 
 ## Prototype Authentication
-CivicPath AI uses prototype-only localStorage authentication. Users can create an account, log in with that account, or continue as a guest without Firebase Authentication or Google login.
+CivicPath AI uses prototype-only browser storage authentication. Users can create an account, log in with that account, or continue as a guest without Firebase Authentication or Google login.
 
-Local account and session data uses:
+Local accounts are saved in `localStorage`:
 - `civicpath_users`
+
+The active tab session is saved in `sessionStorage`, so closing the tab signs the user out:
 - `civicpath_current_user`
 
-Progress is stored locally per user:
+Progress remains saved in `localStorage` per user:
 - `civicpath_progress_${user.id}`
 - `civicpath_progress_guest`
 
@@ -82,7 +84,7 @@ VITE_GEMINI_API_KEY=your_gemini_api_key_here
 If `VITE_GEMINI_API_KEY` is missing, AI Guide, quizzes, and Myth Buster continue to work with local fallback responses.
 
 ## App Mode
-Offline/PWA mode has been removed. The app runs as a standard Vite React application.
+Offline/PWA mode has been removed. CivicPath AI runs as a standard Vite React app.
 
 ## Firebase Hosting
 The project may keep `firebase.json` for static Firebase Hosting deployment. Firebase Authentication, Google login, and Firestore sync are not used by the app.

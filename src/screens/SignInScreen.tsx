@@ -2,6 +2,14 @@ import { useState, type FormEvent } from "react";
 
 type AuthMode = "login" | "create" | "guest";
 
+const DEMO_STORAGE_KEYS = new Set([
+  "civicpath_users",
+  "civicpath_current_user",
+  "civicpath-user-state",
+  "civicpath-ai-guide-draft",
+]);
+const DEMO_PROGRESS_PREFIX = "civicpath_progress_";
+
 interface SignInScreenProps {
   loading: boolean;
   error: string | null;
@@ -16,6 +24,23 @@ const modeLabels: Record<AuthMode, string> = {
   create: "Create Account",
   guest: "Guest",
 };
+
+function isDemoStorageKey(key: string): boolean {
+  return DEMO_STORAGE_KEYS.has(key) || key.startsWith(DEMO_PROGRESS_PREFIX);
+}
+
+function clearDemoStorage(storage: Storage): void {
+  const keysToRemove: string[] = [];
+
+  for (let index = 0; index < storage.length; index += 1) {
+    const key = storage.key(index);
+    if (key && isDemoStorageKey(key)) {
+      keysToRemove.push(key);
+    }
+  }
+
+  keysToRemove.forEach((key) => storage.removeItem(key));
+}
 
 export const SignInScreen = ({
   loading,
@@ -56,6 +81,30 @@ export const SignInScreen = ({
     setLocalError(null);
     const message = await onGuest();
     setLocalError(message);
+  };
+
+  const resetDemoData = () => {
+    const shouldReset = window.confirm(
+      "Reset all local CivicPath demo accounts and progress on this device?",
+    );
+
+    if (!shouldReset) {
+      return;
+    }
+
+    try {
+      clearDemoStorage(window.localStorage);
+    } catch {
+      // Continue with session storage cleanup and reload.
+    }
+
+    try {
+      clearDemoStorage(window.sessionStorage);
+    } catch {
+      // Reload even if storage cleanup is partially blocked.
+    }
+
+    window.location.reload();
   };
 
   const visibleError = localError ?? error;
@@ -245,6 +294,13 @@ export const SignInScreen = ({
           <p className="text-[9px] uppercase font-bold tracking-tighter text-muted">
             A project of the Non-Partisan Educational Initiative
           </p>
+          <button
+            type="button"
+            onClick={resetDemoData}
+            className="mx-auto text-[9px] font-black uppercase tracking-widest text-muted underline decoration-border underline-offset-4 hover:text-red-600"
+          >
+            Reset demo data
+          </button>
         </div>
       </div>
     </div>

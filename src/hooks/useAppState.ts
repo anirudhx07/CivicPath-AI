@@ -258,7 +258,9 @@ export interface UseAppStateReturn {
 export function useAppState(): UseAppStateReturn {
   const [initialAuthUser] = useState<LocalAuthUser | null>(() => getCurrentUser());
   const [hasActiveSession, setHasActiveSession] = useState(() => initialAuthUser !== null);
-  const [currentScreen, setCurrentScreen] = useState<AppScreen>(AppScreen.SPLASH);
+  const [currentScreen, setCurrentScreen] = useState<AppScreen>(() =>
+    initialAuthUser ? AppScreen.SPLASH : AppScreen.SIGN_IN,
+  );
   const [user, setUser] = useState<UserProfile>(() => buildInitialUser(initialAuthUser));
   const [selectedLessonId, setSelectedLessonId] = useState<string>(LESSONS[0]?.id ?? "");
   const [selectedTimelineStepId, setSelectedTimelineStepId] = useState<string>(
@@ -298,7 +300,7 @@ export function useAppState(): UseAppStateReturn {
   useEffect(() => {
     if (currentScreen === AppScreen.SPLASH) {
       const timer = setTimeout(
-        () => setCurrentScreen(hasActiveSession ? AppScreen.HOME : AppScreen.LANGUAGE),
+        () => setCurrentScreen(hasActiveSession ? AppScreen.HOME : AppScreen.SIGN_IN),
         2500,
       );
       return () => clearTimeout(timer);
