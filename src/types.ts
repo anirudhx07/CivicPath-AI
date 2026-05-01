@@ -33,10 +33,12 @@ export type UserRole = "first-time-voter" | "student" | "teacher" | "citizen" | 
 export type Language = "en" | "hi" | "bn" | "ta" | "te" | "mr" | "gu" | "kn" | "ml" | "pa";
 
 export interface UserProfile {
+  id?: string;
   uid: string;
   name: string;
-  email: string | null;
+  email?: string | null;
   photoURL: string | null;
+  avatar?: string | null;
   avatarUrl: string | null;
   isAuthenticated: boolean;
   isGuest: boolean;

@@ -50,6 +50,7 @@ export function renderScreen(
     updateAccessibilitySettings,
     setAuthenticatedUser,
     setGuestUser,
+    resetSession,
     openLesson,
     openTimelineStep,
     startQuiz,
@@ -98,17 +99,50 @@ export function renderScreen(
         <SignInScreen
           loading={auth.loading}
           error={auth.error}
-          signInWithGoogle={async () => {
-            const authUser = await auth.signInWithGoogle();
+          onLogin={async (email, password) => {
+            const result = await auth.loginWithEmail(email, password);
 
-            if (authUser) {
-              setAuthenticatedUser(authUser);
+            if (result.ok === false) {
+              return result.error;
+            }
+
+            if (result.ok) {
+              setAuthenticatedUser(result.user);
               navigateTo(AppScreen.HOME);
+              return null;
             }
           }}
-          onGuest={() => {
-            setGuestUser();
-            navigateTo(AppScreen.HOME);
+          onCreateAccount={async (name, email, password) => {
+            const result = await auth.createAccount(name, email, password);
+
+            if (result.ok === false) {
+              return result.error;
+            }
+
+            if (result.ok) {
+              setAuthenticatedUser(result.user, {
+                role: user.role,
+                language: user.language,
+              });
+              navigateTo(AppScreen.HOME);
+              return null;
+            }
+          }}
+          onGuest={async () => {
+            const result = await auth.continueAsGuest();
+
+            if (result.ok === false) {
+              return result.error;
+            }
+
+            if (result.ok) {
+              setGuestUser(result.user, {
+                role: user.role,
+                language: user.language,
+              });
+              navigateTo(AppScreen.HOME);
+              return null;
+            }
           }}
           onBack={goBack}
         />
@@ -141,11 +175,9 @@ export function renderScreen(
           onNavigate={navigateTo}
           onSignOut={async () => {
             await auth.signOut();
-            setGuestUser();
-            navigateTo(AppScreen.SIGN_IN);
+            resetSession();
           }}
           authError={auth.error ?? state.persistenceError}
-          syncLoading={state.persistenceLoading}
           signOutLoading={auth.loading}
         />
       );

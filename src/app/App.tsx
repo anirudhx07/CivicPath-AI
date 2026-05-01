@@ -1,9 +1,7 @@
-import { useEffect } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { Sidebar } from "../components/Sidebar";
 import { BottomNav } from "../components/BottomNav";
 import { Header } from "../components/Header";
-import { DevSetupBanner } from "../components/DevSetupBanner";
 import { useAppState } from "../hooks/useAppState";
 import { useAuth } from "../hooks/useAuth";
 import { shouldShowNav } from "./navigation";
@@ -12,7 +10,7 @@ import { renderScreen } from "./routes";
 export default function App() {
   const state = useAppState();
   const auth = useAuth();
-  const { currentScreen, history, setAuthenticatedUser } = state;
+  const { currentScreen, history } = state;
   const { accessibilitySettings } = state.user;
   const showNav = shouldShowNav(currentScreen);
   const appClasses = [
@@ -25,12 +23,6 @@ export default function App() {
   ]
     .filter(Boolean)
     .join(" ");
-
-  useEffect(() => {
-    if (auth.user?.isAuthenticated) {
-      setAuthenticatedUser(auth.user);
-    }
-  }, [auth.user, setAuthenticatedUser]);
 
   return (
     <div className={appClasses}>
@@ -59,7 +51,6 @@ export default function App() {
       </main>
 
       {showNav && <BottomNav currentScreen={currentScreen} onNavigate={state.navigateTo} />}
-      <DevSetupBanner />
     </div>
   );
 }

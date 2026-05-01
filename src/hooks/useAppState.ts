@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback, type Dispatch, type SetStateAction } from "react";
+import { useCallback, useEffect, useState, type Dispatch, type SetStateAction } from "react";
 import { AppScreen } from "../types";
 import type {
   AccessibilitySettings,
@@ -17,18 +17,14 @@ import { LESSONS } from "../data/lessons";
 import { TIMELINE_STEPS } from "../data/timeline";
 import { QUIZ_QUESTIONS, CURRENT_QUIZ_ID } from "../data/quizQuestions";
 import { BADGES } from "../data/badges";
-import type { AuthUser } from "../services/authService";
-import { loadState, saveState } from "../services/storageService";
+import type { AuthResult, LocalAuthUser } from "../services/localAuthService";
+import { getCurrentUser, updateCurrentUser } from "../services/localAuthService";
 import {
-  createOrUpdateUserProfile,
-  deleteSavedItem as deleteSavedItemFromFirestore,
-  getUserProfile,
-  getUserProgress,
-  saveBadgeUnlock,
-  saveQuizResult,
-  saveSavedItem,
+  loadLegacyGuestState,
+  loadUserProgress,
   saveUserProgress,
-} from "../services/userService";
+  type StoredUserProgress,
+} from "../services/storageService";
 
 const calculateReadinessScore = (
   lessonsCompleted: string[],
@@ -97,10 +93,6 @@ const getUnlockedBadges = ({
   return BADGES.filter((badge) => unlockedBadges.has(badge.id)).map((badge) => badge.id);
 };
 
-function getPersistenceErrorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : "Progress sync failed. Local progress is still available.";
-}
-
 function buildDefaultUser(): UserProfile {
   const lessonsCompleted = ["l1"];
   const timelineStepsCompleted = ["ts1"];
@@ -114,10 +106,12 @@ function buildDefaultUser(): UserProfile {
   );
 
   return {
+    id: "guest",
     uid: "guest",
-    name: "Guest",
+    name: "Guest Learner",
     email: null,
     photoURL: null,
+    avatar: null,
     avatarUrl: null,
     isAuthenticated: false,
     isGuest: true,
@@ -140,40 +134,84 @@ function buildDefaultUser(): UserProfile {
   };
 }
 
-function buildInitialUser(): UserProfile {
-  const defaultUser = buildDefaultUser();
-  const storedUser = loadState<Partial<UserProfile>>();
-
-  if (!storedUser || storedUser.uid !== "guest") {
-    return defaultUser;
+function mergeProgress(
+  baseUser: UserProfile,
+  progress: Partial<StoredUserProgress> | Partial<UserProfile> | null,
+): UserProfile {
+  if (!progress) {
+    return baseUser;
   }
 
+  const lessonsCompleted = progress.lessonsCompleted ?? baseUser.lessonsCompleted;
+  const timelineStepsCompleted =
+    progress.timelineStepsCompleted ?? baseUser.timelineStepsCompleted;
+  const quizzesCompleted = progress.quizzesCompleted ?? baseUser.quizzesCompleted;
+  const quizScores = progress.quizScores ?? baseUser.quizScores;
+  const readinessScore =
+    progress.readinessScore ??
+    calculateReadinessScore(
+      lessonsCompleted,
+      timelineStepsCompleted,
+      quizzesCompleted,
+      quizScores,
+    );
+
   return {
-    ...defaultUser,
-    ...storedUser,
-    uid: "guest",
-    email: null,
-    photoURL: null,
-    avatarUrl: null,
-    isAuthenticated: false,
-    isGuest: true,
-    lessonsCompleted: storedUser.lessonsCompleted ?? defaultUser.lessonsCompleted,
-    timelineStepsCompleted:
-      storedUser.timelineStepsCompleted ?? defaultUser.timelineStepsCompleted,
-    quizzesCompleted: storedUser.quizzesCompleted ?? defaultUser.quizzesCompleted,
-    quizScores: storedUser.quizScores ?? defaultUser.quizScores,
-    quizHistory: storedUser.quizHistory ?? defaultUser.quizHistory,
-    badges: storedUser.badges ?? defaultUser.badges,
-    savedItems: storedUser.savedItems ?? defaultUser.savedItems,
+    ...baseUser,
+    role: progress.role ?? baseUser.role,
+    language: progress.language ?? baseUser.language,
+    readinessScore,
+    lessonsCompleted,
+    timelineStepsCompleted,
+    quizzesCompleted,
+    quizScores,
+    quizHistory: progress.quizHistory ?? baseUser.quizHistory,
+    badges:
+      progress.badges ??
+      getUnlockedBadges({
+        lessonsCompleted,
+        quizzesCompleted,
+        quizScores,
+        readinessScore,
+      }),
+    savedItems: progress.savedItems ?? baseUser.savedItems,
     accessibilitySettings: {
       ...defaultAccessibilitySettings,
-      ...storedUser.accessibilitySettings,
+      ...baseUser.accessibilitySettings,
+      ...progress.accessibilitySettings,
     },
   };
 }
 
+function buildUserFromLocalAuth(
+  authUser: LocalAuthUser,
+  overrides: Partial<Pick<LocalAuthUser, "role" | "language" | "name">> = {},
+): UserProfile {
+  const defaultUser = buildDefaultUser();
+  const baseUser: UserProfile = {
+    ...defaultUser,
+    id: authUser.id,
+    uid: authUser.id,
+    name: overrides.name ?? authUser.name,
+    email: authUser.email || null,
+    isAuthenticated: !authUser.isGuest,
+    isGuest: authUser.isGuest,
+    role: overrides.role ?? authUser.role,
+    language: overrides.language ?? authUser.language,
+  };
+
+  const storedProgress =
+    loadUserProgress(authUser.id, authUser.isGuest) ??
+    (authUser.isGuest ? loadLegacyGuestState() : null);
+
+  return mergeProgress(baseUser, storedProgress);
+}
+
+function buildInitialUser(authUser: LocalAuthUser | null): UserProfile {
+  return authUser ? buildUserFromLocalAuth(authUser) : buildDefaultUser();
+}
+
 export interface UseAppStateReturn {
-  // State
   currentScreen: AppScreen;
   user: UserProfile;
   selectedLesson: Lesson;
@@ -186,14 +224,19 @@ export interface UseAppStateReturn {
   persistenceLoading: boolean;
   persistenceError: string | null;
 
-  // Navigation
   navigateTo: (screen: AppScreen) => void;
   goBack: () => void;
 
-  // User mutations
   setUser: Dispatch<SetStateAction<UserProfile>>;
-  setAuthenticatedUser: (authUser: AuthUser) => void;
-  setGuestUser: () => void;
+  setAuthenticatedUser: (
+    authUser: LocalAuthUser,
+    overrides?: Partial<Pick<LocalAuthUser, "role" | "language" | "name">>,
+  ) => void;
+  setGuestUser: (
+    authUser: LocalAuthUser,
+    overrides?: Partial<Pick<LocalAuthUser, "role" | "language" | "name">>,
+  ) => void;
+  resetSession: () => void;
   setLanguage: (lang: Language) => void;
   setRole: (role: UserRole) => void;
   updateProgress: (
@@ -204,7 +247,6 @@ export interface UseAppStateReturn {
   ) => void;
   updateAccessibilitySettings: (settings: Partial<AccessibilitySettings>) => void;
 
-  // Screen-specific actions
   openLesson: (lessonId: string) => void;
   openTimelineStep: (stepId: string, shouldMarkComplete: boolean) => void;
   startQuiz: (quiz?: ActiveQuiz) => void;
@@ -214,8 +256,10 @@ export interface UseAppStateReturn {
 }
 
 export function useAppState(): UseAppStateReturn {
+  const [initialAuthUser] = useState<LocalAuthUser | null>(() => getCurrentUser());
+  const [hasActiveSession, setHasActiveSession] = useState(() => initialAuthUser !== null);
   const [currentScreen, setCurrentScreen] = useState<AppScreen>(AppScreen.SPLASH);
-  const [user, setUser] = useState<UserProfile>(buildInitialUser);
+  const [user, setUser] = useState<UserProfile>(() => buildInitialUser(initialAuthUser));
   const [selectedLessonId, setSelectedLessonId] = useState<string>(LESSONS[0]?.id ?? "");
   const [selectedTimelineStepId, setSelectedTimelineStepId] = useState<string>(
     TIMELINE_STEPS[0]?.id ?? "",
@@ -225,17 +269,13 @@ export function useAppState(): UseAppStateReturn {
   const [latestQuizReview, setLatestQuizReview] = useState<QuizAnswerReview[]>([]);
   const [activeQuiz, setActiveQuiz] = useState<ActiveQuiz>(buildMockQuiz);
   const [history, setHistory] = useState<AppScreen[]>([]);
-  const [persistenceLoading, setPersistenceLoading] = useState(false);
   const [persistenceError, setPersistenceError] = useState<string | null>(null);
-  const loadedFirestoreUidRef = useRef<string | null>(null);
-  const lastProgressSignatureRef = useRef<string>("");
+  const persistenceLoading = false;
 
   const selectedLesson =
     LESSONS.find((lesson) => lesson.id === selectedLessonId) ?? LESSONS[0];
   const selectedTimelineStep =
     TIMELINE_STEPS.find((step) => step.id === selectedTimelineStepId) ?? TIMELINE_STEPS[0];
-
-  // --- Navigation ---
 
   const navigateTo = useCallback(
     (screen: AppScreen) => {
@@ -251,188 +291,45 @@ export function useAppState(): UseAppStateReturn {
       setHistory((p) => p.slice(0, -1));
       setCurrentScreen(prev);
     } else {
-      setCurrentScreen(AppScreen.HOME);
+      setCurrentScreen(hasActiveSession ? AppScreen.HOME : AppScreen.ROLE_SELECTION);
     }
-  }, [history]);
+  }, [hasActiveSession, history]);
 
-  // Splash auto-advance
   useEffect(() => {
     if (currentScreen === AppScreen.SPLASH) {
-      const timer = setTimeout(() => setCurrentScreen(AppScreen.LANGUAGE), 2500);
+      const timer = setTimeout(
+        () => setCurrentScreen(hasActiveSession ? AppScreen.HOME : AppScreen.LANGUAGE),
+        2500,
+      );
       return () => clearTimeout(timer);
     }
-  }, [currentScreen]);
+  }, [currentScreen, hasActiveSession]);
 
   useEffect(() => {
-    if (!user.isAuthenticated || user.uid === "guest") {
-      loadedFirestoreUidRef.current = null;
-      lastProgressSignatureRef.current = "";
-      saveState(user);
-    }
-  }, [user]);
-
-  useEffect(() => {
-    if (!user.isAuthenticated || user.uid === "guest") {
+    if (!hasActiveSession) {
       return;
     }
 
-    if (loadedFirestoreUidRef.current === user.uid) {
-      return;
-    }
-
-    let cancelled = false;
-
-    async function loadFirestoreUser() {
-      setPersistenceLoading(true);
-      setPersistenceError(null);
-
-      try {
-        await createOrUpdateUserProfile({
-          uid: user.uid,
-          name: user.name,
-          email: user.email,
-          photoURL: user.avatarUrl,
-          role: user.role,
-          language: user.language,
-          accessibilitySettings: user.accessibilitySettings,
-        });
-
-        const [profile, progress] = await Promise.all([
-          getUserProfile(user.uid),
-          getUserProgress(user.uid),
-        ]);
-
-        if (cancelled) {
-          return;
-        }
-
-        setUser((prev) => {
-          if (prev.uid !== user.uid) {
-            return prev;
-          }
-
-          return {
-            ...prev,
-            role: profile?.role ?? prev.role,
-            language: profile?.language ?? prev.language,
-            readinessScore: progress?.readinessScore ?? prev.readinessScore,
-            lessonsCompleted: progress?.lessonsCompleted ?? prev.lessonsCompleted,
-            timelineStepsCompleted:
-              progress?.timelineStepsCompleted ?? prev.timelineStepsCompleted,
-            quizzesCompleted: progress?.quizzesCompleted ?? prev.quizzesCompleted,
-            quizScores: progress?.quizScores ?? prev.quizScores,
-            badges: progress?.badges ?? prev.badges,
-            accessibilitySettings: {
-              ...defaultAccessibilitySettings,
-              ...prev.accessibilitySettings,
-              ...profile?.accessibilitySettings,
-            },
-          };
-        });
-      } catch (error) {
-        if (!cancelled) {
-          const message = getPersistenceErrorMessage(error);
-          setPersistenceError(message);
-          console.info("[CivicPath] Firestore sync unavailable:", error);
-        }
-      } finally {
-        if (!cancelled) {
-          loadedFirestoreUidRef.current = user.uid;
-          setPersistenceLoading(false);
-        }
-      }
-    }
-
-    void loadFirestoreUser();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [
-    user.avatarUrl,
-    user.email,
-    user.isAuthenticated,
-    user.language,
-    user.name,
-    user.role,
-    user.accessibilitySettings,
-    user.uid,
-  ]);
-
-  useEffect(() => {
-    if (!user.isAuthenticated || user.uid === "guest") {
-      return;
-    }
-
-    if (loadedFirestoreUidRef.current !== user.uid) {
-      return;
-    }
-
-    const progress = {
-      readinessScore: user.readinessScore,
-      lessonsCompleted: user.lessonsCompleted,
-      timelineStepsCompleted: user.timelineStepsCompleted,
-      quizzesCompleted: user.quizzesCompleted,
-      quizScores: user.quizScores,
-      badges: user.badges,
-      savedItemsCount: user.savedItems.length,
-    };
-    const signature = JSON.stringify({
-      uid: user.uid,
+    const saveResult = saveUserProgress(user);
+    const sessionResult = updateCurrentUser({
       name: user.name,
-      email: user.email,
-      photoURL: user.avatarUrl,
+      email: user.email ?? "",
       role: user.role,
       language: user.language,
-      accessibilitySettings: user.accessibilitySettings,
-      progress,
     });
 
-    if (lastProgressSignatureRef.current === signature) {
+    if (saveResult.ok === false) {
+      setPersistenceError(saveResult.error);
       return;
     }
 
-    lastProgressSignatureRef.current = signature;
-    setPersistenceLoading(true);
+    if (sessionResult.ok === false) {
+      setPersistenceError(sessionResult.error);
+      return;
+    }
+
     setPersistenceError(null);
-
-    Promise.all([
-      createOrUpdateUserProfile({
-        uid: user.uid,
-        name: user.name,
-        email: user.email,
-        photoURL: user.avatarUrl,
-        role: user.role,
-        language: user.language,
-        accessibilitySettings: user.accessibilitySettings,
-      }),
-      saveUserProgress(user.uid, progress),
-    ])
-      .catch((error) => {
-        const message = getPersistenceErrorMessage(error);
-        setPersistenceError(message);
-        console.info("[CivicPath] Firestore progress save failed:", error);
-      })
-      .finally(() => setPersistenceLoading(false));
-  }, [
-    user.avatarUrl,
-    user.badges,
-    user.email,
-    user.isAuthenticated,
-    user.language,
-    user.accessibilitySettings,
-    user.lessonsCompleted,
-    user.name,
-    user.quizScores,
-    user.quizzesCompleted,
-    user.readinessScore,
-    user.role,
-    user.savedItems.length,
-    user.timelineStepsCompleted,
-    user.uid,
-  ]);
-
-  // --- User mutations ---
+  }, [hasActiveSession, user]);
 
   const updateProgress = useCallback(
     (
@@ -448,17 +345,6 @@ export function useAppState(): UseAppStateReturn {
         quizScores,
         readinessScore: newScore,
       });
-      const newlyUnlockedBadges = badges.filter((badgeId) => !user.badges.includes(badgeId));
-
-      if (user.isAuthenticated && user.uid !== "guest") {
-        newlyUnlockedBadges.forEach((badgeId) => {
-          void saveBadgeUnlock(user.uid, badgeId).catch((error) => {
-            const message = getPersistenceErrorMessage(error);
-            setPersistenceError(message);
-            console.info("[CivicPath] Badge sync failed:", error);
-          });
-        });
-      }
 
       setUser((prev) => ({
         ...prev,
@@ -470,7 +356,7 @@ export function useAppState(): UseAppStateReturn {
         readinessScore: newScore,
       }));
     },
-    [user.badges, user.isAuthenticated, user.quizScores, user.uid],
+    [user.quizScores],
   );
 
   const setLanguage = useCallback((lang: Language) => {
@@ -491,33 +377,43 @@ export function useAppState(): UseAppStateReturn {
     }));
   }, []);
 
-  const setAuthenticatedUser = useCallback((authUser: AuthUser) => {
-    setUser((prev) => ({
-      ...prev,
-      uid: authUser.uid,
-      name: authUser.name,
-      email: authUser.email,
-      photoURL: authUser.photoURL,
-      avatarUrl: authUser.photoURL,
-      isAuthenticated: authUser.isAuthenticated,
-      isGuest: false,
-    }));
-  }, []);
+  const setAuthenticatedUser = useCallback(
+    (
+      authUser: LocalAuthUser,
+      overrides: Partial<Pick<LocalAuthUser, "role" | "language" | "name">> = {},
+    ) => {
+      const sessionResult: AuthResult =
+        Object.keys(overrides).length > 0
+          ? updateCurrentUser(overrides)
+          : { ok: true, user: authUser };
+      const nextAuthUser =
+        sessionResult.ok === false ? { ...authUser, ...overrides } : sessionResult.user;
 
-  const setGuestUser = useCallback(() => {
-    setUser((prev) => ({
-      ...prev,
-      uid: "guest",
-      name: "Guest",
-      email: null,
-      photoURL: null,
-      avatarUrl: null,
-      isAuthenticated: false,
-      isGuest: true,
-    }));
-  }, []);
+      setUser(buildUserFromLocalAuth(nextAuthUser, overrides));
+      setHasActiveSession(true);
+      setHistory([]);
+      setPersistenceError(sessionResult.ok === false ? sessionResult.error : null);
+    },
+    [],
+  );
 
-  // --- Screen-specific actions ---
+  const setGuestUser = useCallback(
+    (
+      authUser: LocalAuthUser,
+      overrides: Partial<Pick<LocalAuthUser, "role" | "language" | "name">> = {},
+    ) => {
+      setAuthenticatedUser(authUser, overrides);
+    },
+    [setAuthenticatedUser],
+  );
+
+  const resetSession = useCallback(() => {
+    setHasActiveSession(false);
+    setUser(buildDefaultUser());
+    setHistory([]);
+    setPersistenceError(null);
+    setCurrentScreen(AppScreen.SIGN_IN);
+  }, []);
 
   const openLesson = useCallback(
     (lessonId: string) => {
@@ -565,7 +461,13 @@ export function useAppState(): UseAppStateReturn {
       }
       navigateTo(AppScreen.TIMELINE_DETAIL);
     },
-    [navigateTo, updateProgress, user.lessonsCompleted, user.timelineStepsCompleted, user.quizzesCompleted],
+    [
+      navigateTo,
+      updateProgress,
+      user.lessonsCompleted,
+      user.timelineStepsCompleted,
+      user.quizzesCompleted,
+    ],
   );
 
   const completeQuiz = useCallback(
@@ -601,61 +503,33 @@ export function useAppState(): UseAppStateReturn {
           ...(prev.quizHistory ?? []).filter((item) => item.quizId !== activeQuiz.id),
         ].slice(0, 20),
       }));
-      if (user.isAuthenticated && user.uid !== "guest") {
-        void saveQuizResult(user.uid, {
-          quizId: activeQuiz.id,
-          title: activeQuiz.title,
-          sourceType: activeQuiz.sourceType,
-          sourceTitle: activeQuiz.sourceTitle,
-          score,
-          totalQuestions,
-          readinessScore: calculateReadinessScore(
-            user.lessonsCompleted,
-            user.timelineStepsCompleted,
-            Array.from(new Set([...user.quizzesCompleted, activeQuiz.id])),
-            quizScores,
-          ),
-          answers,
-          completedAt,
-        }).catch((error) => {
-          const message = getPersistenceErrorMessage(error);
-          setPersistenceError(message);
-          console.info("[CivicPath] Quiz result sync failed:", error);
-        });
-      }
       navigateTo(AppScreen.QUIZ_RESULT);
     },
-    [activeQuiz, navigateTo, updateProgress, user.isAuthenticated, user.quizScores, user.lessonsCompleted, user.timelineStepsCompleted, user.quizzesCompleted, user.uid],
+    [
+      activeQuiz,
+      navigateTo,
+      updateProgress,
+      user.quizScores,
+      user.lessonsCompleted,
+      user.timelineStepsCompleted,
+      user.quizzesCompleted,
+    ],
   );
 
   const saveItem = useCallback((item: SavedItem) => {
     setUser((prev) =>
-      prev.savedItems.some((s) => s.id === item.id)
+      prev.savedItems.some((savedItem) => savedItem.id === item.id)
         ? prev
         : { ...prev, savedItems: [...prev.savedItems, item] },
     );
-    if (user.isAuthenticated && user.uid !== "guest") {
-      void saveSavedItem(user.uid, item).catch((error) => {
-        const message = getPersistenceErrorMessage(error);
-        setPersistenceError(message);
-        console.info("[CivicPath] Saved item sync failed:", error);
-      });
-    }
-  }, [user.isAuthenticated, user.uid]);
+  }, []);
 
   const deleteItem = useCallback((itemId: string) => {
     setUser((prev) => ({
       ...prev,
       savedItems: prev.savedItems.filter((item) => item.id !== itemId),
     }));
-    if (user.isAuthenticated && user.uid !== "guest") {
-      void deleteSavedItemFromFirestore(user.uid, itemId).catch((error) => {
-        const message = getPersistenceErrorMessage(error);
-        setPersistenceError(message);
-        console.info("[CivicPath] Saved item delete sync failed:", error);
-      });
-    }
-  }, [user.isAuthenticated, user.uid]);
+  }, []);
 
   return {
     currentScreen,
@@ -674,6 +548,7 @@ export function useAppState(): UseAppStateReturn {
     setUser,
     setAuthenticatedUser,
     setGuestUser,
+    resetSession,
     setLanguage,
     setRole,
     updateProgress,

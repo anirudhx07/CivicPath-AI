@@ -1,68 +1,79 @@
-import { useCallback, useEffect, useState } from "react";
-import type { AuthUser } from "../services/authService";
+import { useCallback, useState } from "react";
+import type { AuthResult, LocalAuthUser } from "../services/localAuthService";
 import {
-  getAuthErrorMessage,
-  listenToAuthChanges,
-  signInWithGoogle as signInWithGoogleService,
-  signOutUser,
-} from "../services/authService";
-import { envStatus } from "../services/env";
+  continueAsGuest as continueAsGuestService,
+  createAccount as createAccountService,
+  getCurrentUser,
+  loginWithEmail as loginWithEmailService,
+  logout as logoutService,
+} from "../services/localAuthService";
 
 export interface UseAuthReturn {
-  user: AuthUser | null;
+  user: LocalAuthUser | null;
   loading: boolean;
   error: string | null;
-  isFirebaseConfigured: boolean;
-  missingFirebaseKeys: string[];
-  signInWithGoogle: () => Promise<AuthUser | null>;
+  createAccount: (name: string, email: string, password: string) => Promise<AuthResult>;
+  loginWithEmail: (email: string, password: string) => Promise<AuthResult>;
+  continueAsGuest: () => Promise<AuthResult>;
   signOut: () => Promise<void>;
 }
 
 export function useAuth(): UseAuthReturn {
-  const [user, setUser] = useState<AuthUser | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<LocalAuthUser | null>(() => getCurrentUser());
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const unsubscribe = listenToAuthChanges(
-      (nextUser) => {
-        setUser(nextUser);
+  const runAuthAction = useCallback(
+    async (action: () => AuthResult): Promise<AuthResult> => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const result = action();
+
+        if (result.ok === false) {
+          setError(result.error);
+        } else {
+          setUser(result.user);
+        }
+
+        return result;
+      } finally {
         setLoading(false);
-      },
-      (message) => {
-        setError(message);
-        setLoading(false);
-      },
-    );
+      }
+    },
+    [],
+  );
 
-    return unsubscribe;
-  }, []);
+  const createAccount = useCallback(
+    (name: string, email: string, password: string) =>
+      runAuthAction(() => createAccountService(name, email, password)),
+    [runAuthAction],
+  );
 
-  const signInWithGoogle = useCallback(async () => {
-    setLoading(true);
-    setError(null);
+  const loginWithEmail = useCallback(
+    (email: string, password: string) =>
+      runAuthAction(() => loginWithEmailService(email, password)),
+    [runAuthAction],
+  );
 
-    try {
-      const signedInUser = await signInWithGoogleService();
-      setUser(signedInUser);
-      return signedInUser;
-    } catch (err) {
-      setError(getAuthErrorMessage(err));
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const continueAsGuest = useCallback(
+    () => runAuthAction(() => continueAsGuestService()),
+    [runAuthAction],
+  );
 
   const signOut = useCallback(async () => {
     setLoading(true);
     setError(null);
 
     try {
-      await signOutUser();
-      setUser(null);
-    } catch (err) {
-      setError(getAuthErrorMessage(err));
+      const result = logoutService();
+
+      if (result.ok === false) {
+        setError(result.error);
+      } else {
+        setUser(null);
+      }
     } finally {
       setLoading(false);
     }
@@ -72,9 +83,9 @@ export function useAuth(): UseAuthReturn {
     user,
     loading,
     error,
-    isFirebaseConfigured: envStatus.firebase.isConfigured,
-    missingFirebaseKeys: envStatus.firebase.missingKeys,
-    signInWithGoogle,
+    createAccount,
+    loginWithEmail,
+    continueAsGuest,
     signOut,
   };
 }
