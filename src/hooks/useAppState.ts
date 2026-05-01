@@ -17,6 +17,7 @@ import { LESSONS } from "../data/lessons";
 import { TIMELINE_STEPS } from "../data/timeline";
 import { QUIZ_QUESTIONS, CURRENT_QUIZ_ID } from "../data/quizQuestions";
 import { BADGES } from "../data/badges";
+import { normalizeQuizOptions } from "../lib/quiz";
 import type { AuthResult, LocalAuthUser } from "../services/localAuthService";
 import { getCurrentUser, updateCurrentUser } from "../services/localAuthService";
 import {
@@ -281,6 +282,10 @@ export function useAppState(): UseAppStateReturn {
 
   const navigateTo = useCallback(
     (screen: AppScreen) => {
+      if (screen === currentScreen) {
+        return;
+      }
+
       setHistory((prev) => [...prev, currentScreen]);
       setCurrentScreen(screen);
     },
@@ -394,6 +399,7 @@ export function useAppState(): UseAppStateReturn {
       setUser(buildUserFromLocalAuth(nextAuthUser, overrides));
       setHasActiveSession(true);
       setHistory([]);
+      setCurrentScreen(AppScreen.HOME);
       setPersistenceError(sessionResult.ok === false ? sessionResult.error : null);
     },
     [],
@@ -430,16 +436,19 @@ export function useAppState(): UseAppStateReturn {
       const normalizedQuiz: ActiveQuiz = {
         ...quiz,
         questions: quiz.questions
-          .filter((question) => question.options.length >= 2)
-          .map((question, index): QuizQuestion => ({
-            ...question,
-            id: question.id || `${quiz.id}-q${index + 1}`,
-            options: question.options.slice(0, 4),
-            correctIndex:
-              question.correctIndex >= 0 && question.correctIndex < question.options.length
-                ? question.correctIndex
-                : 0,
-          })),
+          .map((question, index): QuizQuestion => {
+            const normalized = normalizeQuizOptions(question.options, question.correctIndex);
+
+            return {
+              ...question,
+              id: question.id || `${quiz.id}-q${index + 1}`,
+              text: question.text.trim(),
+              options: normalized.options,
+              correctIndex: normalized.correctIndex,
+              explanation: question.explanation.trim(),
+            };
+          })
+          .filter((question) => question.text && question.options.length >= 2),
       };
 
       setActiveQuiz(normalizedQuiz.questions.length > 0 ? normalizedQuiz : buildMockQuiz());

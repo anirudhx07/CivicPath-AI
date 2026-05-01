@@ -1,5 +1,14 @@
 import { useState } from "react";
-import { AppScreen } from "../types";
+import {
+  ArrowLeft,
+  Bot,
+  BookmarkPlus,
+  CheckCircle2,
+  HelpCircle,
+  ScanSearch,
+  Share2,
+  ShieldAlert,
+} from "lucide-react";
 import type { SavedItem } from "../types";
 import {
   classifyElectionClaim,
@@ -16,14 +25,14 @@ interface MythBusterScreenProps {
 function getBadgeClasses(classification: ElectionClaimClassification["classification"]) {
   switch (classification) {
     case "True":
-      return "bg-green-700 text-white border-green-700";
+      return "bg-green-50 text-success border-green-200";
     case "False":
-      return "bg-red-600 text-white border-red-600";
+      return "bg-red-50 text-error border-red-200";
     case "Misleading":
-      return "bg-amber-500 text-ink border-amber-500";
+      return "bg-amber-50 text-warning border-amber-200";
     case "Needs official verification":
     default:
-      return "bg-ink text-white border-ink";
+      return "bg-blue-50 text-accent border-blue-200";
   }
 }
 
@@ -57,7 +66,7 @@ export const MythBusterScreen = ({
       setError(
         err instanceof Error
           ? err.message
-          : "The Myth Processor could not analyze this claim right now.",
+          : "The Myth Buster could not analyze this claim right now.",
       );
     } finally {
       setLoading(false);
@@ -116,107 +125,141 @@ export const MythBusterScreen = ({
   const isSaved = savedItems.some((item) => item.id === savedId);
 
   return (
-    <div className="screen-shell screen-shell-sm min-h-screen">
-      <button
-        onClick={onBack}
-        className="flex items-center gap-2 text-ink font-bold mb-12 uppercase text-[10px] tracking-widest border-b-2 border-ink pb-1"
-      >
-        <span className="material-symbols-outlined text-sm">arrow_back</span> Return to Desk
+    <div className="screen-shell screen-shell-lg min-h-screen">
+      <button onClick={onBack} className="ghost-button mb-6">
+        <ArrowLeft size={17} />
+        Back
       </button>
-      <h1 className="text-4xl font-serif italic font-bold mb-4">Myth Processor</h1>
-      <p className="text-muted mb-12">
-        Submit election-process claims for neutral educational review. Always verify official
-        requirements with your local election authority.
-      </p>
 
-      <div className="screen-card border border-border p-5 sm:p-8 mb-12">
-        <textarea
-          value={input}
-          onChange={(event) => setInput(event.target.value)}
-          placeholder="Enter a claim you've heard..."
-          className="w-full bg-paper border-none min-h-[120px] focus:ring-0 text-xl font-serif italic mb-6 resize-none"
-        />
+      <section className="mb-6 screen-card overflow-hidden p-5 sm:p-7">
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_16rem] lg:items-center">
+          <div className="min-w-0">
+            <p className="page-eyebrow">AI Verification</p>
+            <h1 className="mt-2 text-3xl font-black text-ink sm:text-4xl">Myth Buster</h1>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-muted sm:text-base">
+              Type an election claim and CivicPath will classify it with a neutral explanation,
+              related topics, and a reminder to verify current official rules.
+            </p>
+          </div>
+          <div className="rounded-3xl bg-gradient-to-br from-ink to-indigo p-5 text-white shadow-lg">
+            <ScanSearch size={30} />
+            <h2 className="mt-5 text-xl font-black">Claim scanner</h2>
+            <p className="mt-2 text-sm leading-5 text-white/72">True, false, misleading, or needs verification.</p>
+          </div>
+        </div>
+      </section>
+
+      <section className="screen-card p-5 sm:p-7">
+        <label className="block">
+          <span className="mb-3 block text-lg font-black text-ink">Type an election claim...</span>
+          <textarea
+            value={input}
+            onChange={(event) => setInput(event.target.value)}
+            placeholder="Example: Election results are decided by exit polls."
+            className="modern-input min-h-[150px] resize-none text-base leading-7"
+          />
+        </label>
         <button
           type="button"
           onClick={() => void analyze()}
           disabled={loading || !input.trim()}
-          className="w-full py-4 bg-ink text-white font-bold uppercase text-xs tracking-widest hover:bg-black transition-colors disabled:opacity-50"
+          className="primary-button mt-4 w-full"
         >
-          {loading ? "Analyzing Source..." : "Cross-Reference Source"}
+          <ScanSearch size={18} />
+          {loading ? "Analyzing claim..." : "Analyze Claim"}
         </button>
-      </div>
+      </section>
 
       {loading && (
-        <div className="flex flex-col items-center gap-6 py-10">
-          <div className="w-12 h-12 border-4 border-ink border-t-transparent animate-spin" />
-          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted">
-            Reviewing claim with the neutral civic assistant...
-          </p>
+        <div className="mt-6 screen-card flex flex-col items-center gap-5 p-8 text-center">
+          <div className="relative flex h-20 w-20 items-center justify-center rounded-full bg-soft-blue">
+            <div className="absolute inset-0 rounded-full border-4 border-blue-100 border-t-accent animate-spin" />
+            <Bot className="text-accent" size={28} />
+          </div>
+          <div>
+            <h2 className="text-xl font-black text-ink">AI scanning claim</h2>
+            <p className="mt-2 text-sm font-semibold text-muted">
+              Checking for civic-process accuracy and official verification needs.
+            </p>
+          </div>
         </div>
       )}
 
       {error && !loading && (
-        <div role="alert" className="border border-red-200 bg-[#FEF2F2] p-6 text-sm text-red-600 font-bold leading-relaxed mb-8">
+        <div
+          role="alert"
+          className="mt-6 rounded-3xl border border-red-100 bg-red-50 p-5 text-sm font-bold leading-6 text-error"
+        >
           {error}
         </div>
       )}
 
       {result && !loading && (
-        <div className="screen-card border border-border p-5 sm:p-8 bg-white">
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8 border-b border-border pb-4">
-            <span className="pill bg-paper text-ink border border-border">Verification Report</span>
+        <section className="mt-6 screen-card overflow-hidden p-5 sm:p-7">
+          <div className="mb-6 flex flex-col gap-4 border-b border-border pb-5 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="page-eyebrow">Result</p>
+              <h2 className="mt-1 text-2xl font-black text-ink">Verification report</h2>
+            </div>
             <span
-              className={`px-4 py-2 text-[10px] font-black uppercase tracking-widest border ${getBadgeClasses(
+              className={`w-fit rounded-full border px-4 py-2 text-sm font-black ${getBadgeClasses(
                 result.classification,
               )}`}
             >
-              {result.classification}
+              {result.classification === "Needs official verification"
+                ? "Needs Verification"
+                : result.classification}
             </span>
           </div>
 
-          <h3 className="text-xl font-serif italic mb-8 leading-relaxed">"{result.claim}"</h3>
-
-          <div className="space-y-6">
-            {[
-              ["Short Explanation", result.shortExplanation],
-              ["Why People Believe This", result.whyPeopleBelieveThis],
-              ["The Truth", result.truth],
-              ["Citizen Action", result.citizenAction],
-            ].map(([title, content]) => (
-              <section key={title} className="bg-paper p-5 sm:p-6 text-sm leading-relaxed border border-border">
-                <h4 className="text-[10px] uppercase font-black tracking-widest text-ink mb-3">
-                  {title}
-                </h4>
-                <p className="text-muted">{content}</p>
-              </section>
-            ))}
-
-            {result.relatedTopics.length > 0 && (
-              <section className="bg-paper p-5 sm:p-6 border border-border">
-                <h4 className="text-[10px] uppercase font-black tracking-widest text-ink mb-4">
-                  Related Topics
-                </h4>
-                <div className="flex flex-wrap gap-2">
-                  {result.relatedTopics.map((topic) => (
-                    <span
-                      key={topic}
-                      className="px-3 py-2 bg-white border border-border text-[10px] uppercase font-bold tracking-widest text-muted"
-                    >
-                      {topic}
-                    </span>
-                  ))}
-                </div>
-              </section>
-            )}
+          <div className="rounded-3xl bg-paper p-5">
+            <p className="text-sm font-bold text-muted">Claim</p>
+            <p className="mt-2 text-xl font-black leading-8 text-ink">&quot;{result.claim}&quot;</p>
           </div>
 
-          <div className="mt-8 flex flex-wrap gap-4">
-            <button
-              type="button"
-              onClick={saveMyth}
-              className="text-[10px] uppercase font-bold tracking-widest text-accent border-b border-accent"
-            >
-              {isSaved ? "Saved Myth" : "Save Myth"}
+          <div className="mt-5 grid gap-4 lg:grid-cols-2">
+            {[
+              ["Short Explanation", result.shortExplanation, CheckCircle2],
+              ["Why People Believe This", result.whyPeopleBelieveThis, HelpCircle],
+              ["The Truth", result.truth, ShieldAlert],
+              ["Citizen Action", result.citizenAction, ScanSearch],
+            ].map(([title, content, Icon]) => {
+              const SectionIcon = Icon as typeof CheckCircle2;
+
+              return (
+                <section key={title as string} className="rounded-3xl border border-border bg-white p-5 shadow-sm">
+                  <div className="mb-3 flex items-center gap-3">
+                    <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-soft-blue text-accent">
+                      <SectionIcon size={18} />
+                    </span>
+                    <h3 className="font-black text-ink">{title as string}</h3>
+                  </div>
+                  <p className="text-sm leading-6 text-muted">{content as string}</p>
+                </section>
+              );
+            })}
+          </div>
+
+          {result.relatedTopics.length > 0 && (
+            <section className="mt-5 rounded-3xl border border-border bg-soft-blue p-5">
+              <h3 className="font-black text-ink">Related lessons</h3>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {result.relatedTopics.map((topic) => (
+                  <span
+                    key={topic}
+                    className="rounded-full border border-blue-100 bg-white px-3 py-2 text-xs font-bold text-accent"
+                  >
+                    {topic}
+                  </span>
+                ))}
+              </div>
+            </section>
+          )}
+
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+            <button type="button" onClick={saveMyth} className="secondary-button">
+              <BookmarkPlus size={17} />
+              {isSaved ? "Saved" : "Save"}
             </button>
             <button
               type="button"
@@ -225,25 +268,23 @@ export const MythBusterScreen = ({
                   `Help me understand this election claim in more detail: "${result.claim}"`,
                 )
               }
-              className="text-[10px] uppercase font-bold tracking-widest text-ink border-b border-ink"
+              className="secondary-button"
             >
+              <Bot size={17} />
               Ask AI Follow-Up
             </button>
-            <button
-              type="button"
-              onClick={() => void shareFact()}
-              className="text-[10px] uppercase font-bold tracking-widest text-muted"
-            >
-              Share Fact
+            <button type="button" onClick={() => void shareFact()} className="secondary-button">
+              <Share2 size={17} />
+              Share
             </button>
           </div>
 
           {shareStatus && (
-            <p className="mt-4 text-[10px] uppercase font-bold tracking-widest text-muted">
+            <p className="mt-4 rounded-2xl bg-paper p-3 text-sm font-semibold text-muted">
               {shareStatus}
             </p>
           )}
-        </div>
+        </section>
       )}
     </div>
   );

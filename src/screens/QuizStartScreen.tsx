@@ -1,4 +1,16 @@
 import { useEffect, useState } from "react";
+import {
+  ArrowLeft,
+  BadgeCheck,
+  BookOpen,
+  CheckCircle2,
+  Circle,
+  Clock3,
+  ListChecks,
+  Sparkles,
+  Trophy,
+  XCircle,
+} from "lucide-react";
 import type { AccessibilitySettings, ActiveQuiz, QuizAnswerReview, UserProfile } from "../types";
 import { QUIZ_QUESTIONS } from "../data/quizQuestions";
 import { LESSONS } from "../data/lessons";
@@ -84,50 +96,71 @@ export const QuizStartScreen = ({ onStart, onBack }: QuizStartScreenProps) => {
   };
 
   return (
-    <div className="screen-shell screen-shell-sm min-h-screen flex flex-col">
-      <button
-        onClick={onBack}
-        className="flex items-center gap-2 text-ink font-bold mb-16 uppercase text-[10px] tracking-widest border-b-2 border-ink pb-1 w-fit"
-      >
-        <span className="material-symbols-outlined text-sm">arrow_back</span> Return
+    <div className="screen-shell screen-shell-lg min-h-screen">
+      <button onClick={onBack} className="ghost-button mb-6">
+        <ArrowLeft size={17} />
+        Back
       </button>
-      <div className="flex-1 flex flex-col items-center justify-center text-center">
-        <div className="w-40 h-40 border-2 border-ink flex items-center justify-center mb-12 relative">
-          <span className="material-symbols-outlined text-6xl">edit_note</span>
-          <div className="absolute -top-4 -right-4 w-12 h-12 bg-ink text-white flex items-center justify-center font-serif italic text-xl">
-            5
+
+      <section className="mb-6 screen-card overflow-hidden bg-gradient-to-br from-white to-soft-blue p-5 sm:p-7">
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_16rem] lg:items-center">
+          <div>
+            <p className="page-eyebrow">Quiz Studio</p>
+            <h1 className="mt-2 text-3xl font-black text-ink sm:text-4xl">
+              Test your civic readiness
+            </h1>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-muted sm:text-base">
+              Choose the standard readiness quiz or generate a focused practice quiz from your
+              current lesson or timeline step.
+            </p>
+          </div>
+          <div className="rounded-3xl bg-white p-5 shadow-sm">
+            <Trophy className="text-warning" size={30} />
+            <p className="mt-4 text-sm font-bold text-muted">Reward preview</p>
+            <h2 className="text-xl font-black text-ink">Quiz Starter Badge</h2>
+            <p className="mt-2 text-sm leading-5 text-muted">Complete any quiz to unlock progress.</p>
           </div>
         </div>
-        <h1 className="text-4xl font-serif italic font-bold mb-6">Competency Assessment</h1>
-        <p className="text-muted leading-relaxed mb-12">
-          Use the standard readiness quiz or generate a neutral practice quiz from current
-          learning material.
-        </p>
+      </section>
 
-        <div className="w-full border-t border-b border-border py-8 space-y-6">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-muted">
-              Standard Quiz
-            </span>
-            <span className="font-serif italic font-bold">{QUIZ_QUESTIONS.length} Modules</span>
+      <div className="grid gap-4 lg:grid-cols-3">
+        <section className="screen-card flex flex-col p-5 sm:p-6">
+          <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-soft-blue text-accent">
+            <BadgeCheck size={24} />
           </div>
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-muted">
-              Generated Quizzes
-            </span>
-            <span className="font-serif italic font-bold">AI Assisted</span>
+          <h2 className="text-2xl font-black text-ink">Standard Quiz</h2>
+          <p className="mt-2 flex-1 text-sm leading-6 text-muted">
+            A stable readiness check covering registration, voting day, and official verification.
+          </p>
+          <div className="my-5 grid grid-cols-2 gap-3">
+            <div className="rounded-2xl bg-paper p-3">
+              <p className="text-2xl font-black text-ink">{QUIZ_QUESTIONS.length}</p>
+              <p className="text-xs font-bold text-muted">Questions</p>
+            </div>
+            <div className="rounded-2xl bg-paper p-3">
+              <p className="text-2xl font-black text-ink">80%</p>
+              <p className="text-xs font-bold text-muted">Goal score</p>
+            </div>
           </div>
-        </div>
+          <button onClick={() => onStart()} className="primary-button w-full">
+            Begin Standard Quiz
+          </button>
+        </section>
 
-        <div className="w-full mt-8 space-y-4 text-left">
-          <div className="border border-border p-4 bg-paper">
-            <label className="block text-[10px] uppercase font-black tracking-widest text-muted mb-3">
-              Generate From Lesson
-            </label>
+        <section className="screen-card flex flex-col p-5 sm:p-6">
+          <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-soft-blue text-accent">
+            <BookOpen size={24} />
+          </div>
+          <h2 className="text-2xl font-black text-ink">Lesson Quiz</h2>
+          <p className="mt-2 text-sm leading-6 text-muted">
+            Generate practice questions from a specific lesson.
+          </p>
+          <label className="mt-5 block text-sm font-bold text-ink">
+            Lesson
             <select
               value={lessonId}
               onChange={(event) => setLessonId(event.target.value)}
-              className="w-full bg-white border border-border p-3 text-sm mb-4"
+              className="modern-input mt-2"
             >
               {LESSONS.map((lesson) => (
                 <option key={lesson.id} value={lesson.id}>
@@ -135,24 +168,31 @@ export const QuizStartScreen = ({ onStart, onBack }: QuizStartScreenProps) => {
                 </option>
               ))}
             </select>
-            <button
-              type="button"
-              onClick={() => void generateFromLesson()}
-              disabled={loadingSource !== null}
-              className="w-full py-3 border border-ink text-ink font-bold uppercase text-[10px] tracking-widest disabled:opacity-50"
-            >
-              {loadingSource === "lesson" ? "Generating..." : "Generate Lesson Quiz"}
-            </button>
-          </div>
+          </label>
+          <button
+            type="button"
+            onClick={() => void generateFromLesson()}
+            disabled={loadingSource !== null}
+            className="secondary-button mt-auto w-full"
+          >
+            {loadingSource === "lesson" ? "Generating..." : "Generate Lesson Quiz"}
+          </button>
+        </section>
 
-          <div className="border border-border p-4 bg-paper">
-            <label className="block text-[10px] uppercase font-black tracking-widest text-muted mb-3">
-              Generate From Timeline
-            </label>
+        <section className="screen-card flex flex-col p-5 sm:p-6">
+          <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-soft-blue text-accent">
+            <ListChecks size={24} />
+          </div>
+          <h2 className="text-2xl font-black text-ink">Timeline Quiz</h2>
+          <p className="mt-2 text-sm leading-6 text-muted">
+            Practice from a journey step like candidate nomination or vote counting.
+          </p>
+          <label className="mt-5 block text-sm font-bold text-ink">
+            Timeline step
             <select
               value={timelineStepId}
               onChange={(event) => setTimelineStepId(event.target.value)}
-              className="w-full bg-white border border-border p-3 text-sm mb-4"
+              className="modern-input mt-2"
             >
               {TIMELINE_STEPS.map((step) => (
                 <option key={step.id} value={step.id}>
@@ -160,29 +200,26 @@ export const QuizStartScreen = ({ onStart, onBack }: QuizStartScreenProps) => {
                 </option>
               ))}
             </select>
-            <button
-              type="button"
-              onClick={() => void generateFromTimeline()}
-              disabled={loadingSource !== null}
-              className="w-full py-3 border border-ink text-ink font-bold uppercase text-[10px] tracking-widest disabled:opacity-50"
-            >
-              {loadingSource === "timeline" ? "Generating..." : "Generate Timeline Quiz"}
-            </button>
-          </div>
-
-          {error && (
-            <p role="alert" className="text-xs text-red-600 font-bold leading-relaxed">
-              {error}
-            </p>
-          )}
-        </div>
+          </label>
+          <button
+            type="button"
+            onClick={() => void generateFromTimeline()}
+            disabled={loadingSource !== null}
+            className="secondary-button mt-auto w-full"
+          >
+            {loadingSource === "timeline" ? "Generating..." : "Generate Timeline Quiz"}
+          </button>
+        </section>
       </div>
-      <button
-        onClick={() => onStart()}
-        className="w-full py-6 bg-ink text-white font-bold uppercase text-xs tracking-widest sm:tracking-[0.2em] hover:bg-black transition-colors mt-12"
-      >
-        Begin Standard Examination
-      </button>
+
+      {error && (
+        <p
+          role="alert"
+          className="mt-5 rounded-2xl border border-red-100 bg-red-50 p-4 text-sm font-bold leading-6 text-error"
+        >
+          {error}
+        </p>
+      )}
     </div>
   );
 };
@@ -205,6 +242,7 @@ export const QuizQuestionScreen = ({
   const q = activeQuiz.questions[idx] ?? QUIZ_QUESTIONS[0];
   const answered = selected !== null;
   const isCorrect = selected === q.correctIndex;
+  const total = Math.max(activeQuiz.questions.length, 1);
 
   useEffect(() => {
     if (!answered || !accessibilitySettings.voiceExplanations || !("speechSynthesis" in window)) {
@@ -239,67 +277,86 @@ export const QuizQuestionScreen = ({
   };
 
   return (
-    <div className="screen-shell screen-shell-sm min-h-screen flex flex-col">
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-12 sm:mb-16 border-b border-ink pb-4">
-        <span className="text-[10px] font-black uppercase tracking-[0.3em]">
-          Module {idx + 1} of {activeQuiz.questions.length}
-        </span>
-        <div className="h-1 w-full sm:flex-1 bg-border sm:mx-8">
+    <div className="screen-shell screen-shell-md min-h-screen">
+      <section className="mb-6 screen-card p-5 sm:p-6">
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="page-eyebrow">{activeQuiz.sourceTitle}</p>
+            <h1 className="mt-1 text-xl font-black text-ink">Question {idx + 1}</h1>
+          </div>
+          <span className="status-chip w-fit">
+            <Clock3 size={14} />
+            {idx + 1} of {activeQuiz.questions.length}
+          </span>
+        </div>
+        <div className="h-3 overflow-hidden rounded-full bg-slate-100">
           <div
-            className="h-full bg-ink transition-all"
-            style={{ width: `${((idx + 1) / activeQuiz.questions.length) * 100}%` }}
+            className="h-full rounded-full bg-gradient-to-r from-accent to-indigo transition-all"
+            style={{ width: `${((idx + 1) / total) * 100}%` }}
           />
         </div>
-      </div>
+      </section>
 
-      <div className="flex-1">
-        <span className="pill mb-6">{activeQuiz.sourceTitle}</span>
-        <h2 className="text-3xl font-serif italic font-bold mb-12 leading-relaxed">{q.text}</h2>
-        <div className="space-y-4">
+      <section className="screen-card p-5 sm:p-7">
+        <h2 className="text-2xl font-black leading-tight text-ink sm:text-3xl">{q.text}</h2>
+        <div className="mt-7 space-y-3">
           {q.options.map((opt, i) => {
             const showCorrect = answered && i === q.correctIndex;
             const showWrong = answered && selected === i && selected !== q.correctIndex;
 
             return (
               <button
-                key={opt}
+                key={`${q.id}-${i}`}
                 onClick={() => !answered && setSelected(i)}
                 disabled={answered}
-                className={`w-full p-5 sm:p-6 text-left border flex justify-between items-center gap-4 transition-all ${
+                className={`flex w-full items-center justify-between gap-4 rounded-3xl border p-4 text-left transition sm:p-5 ${
                   showCorrect
-                    ? "border-green-700 bg-green-50 text-green-800"
+                    ? "border-green-200 bg-green-50 text-green-800"
                     : showWrong
-                      ? "border-red-600 bg-red-50 text-red-700"
+                      ? "border-red-200 bg-red-50 text-red-700"
                       : selected === i
-                        ? "border-ink bg-ink text-white"
-                        : "border-border bg-white hover:border-ink"
+                        ? "border-accent bg-soft-blue text-accent"
+                        : "border-border bg-white hover:border-accent"
                 }`}
               >
-                <span className="font-medium text-sm min-w-0 break-words">{opt}</span>
-                <div className="text-[10px] uppercase font-black tracking-widest shrink-0">
-                  {showCorrect ? "Correct" : showWrong ? "Wrong" : selected === i ? "Selected" : ""}
-                </div>
+                <span className="flex min-w-0 items-center gap-3">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-paper text-sm font-black">
+                    {String.fromCharCode(65 + i)}
+                  </span>
+                  <span className="text-sm font-bold leading-6 sm:text-base">{opt}</span>
+                </span>
+                {showCorrect ? (
+                  <CheckCircle2 className="shrink-0" size={22} />
+                ) : showWrong ? (
+                  <XCircle className="shrink-0" size={22} />
+                ) : (
+                  <Circle className="shrink-0 text-muted" size={18} />
+                )}
               </button>
             );
           })}
         </div>
 
         {answered && (
-          <div className="mt-8 border border-border bg-paper p-6">
-            <h3 className="text-[10px] uppercase font-black tracking-widest text-ink mb-3">
-              Explanation
+          <div
+            className={`mt-6 rounded-3xl border p-5 ${
+              isCorrect ? "border-green-100 bg-green-50" : "border-amber-100 bg-amber-50"
+            }`}
+          >
+            <h3 className="text-sm font-black text-ink">
+              {isCorrect ? "Correct answer" : "Explanation"}
             </h3>
-            <p className="text-sm text-muted leading-relaxed">{q.explanation}</p>
+            <p className="mt-2 text-sm leading-6 text-muted">{q.explanation}</p>
           </div>
         )}
-      </div>
+      </section>
 
       <button
         onClick={next}
         disabled={selected === null}
-        className="w-full py-6 bg-ink text-white font-bold uppercase text-xs tracking-widest mt-12 disabled:opacity-20"
+        className="primary-button mt-6 w-full"
       >
-        {idx === activeQuiz.questions.length - 1 ? "Submit Evaluation" : "Next Module"}
+        {idx === activeQuiz.questions.length - 1 ? "Submit Quiz" : "Next Question"}
       </button>
     </div>
   );
@@ -321,58 +378,58 @@ export const QuizResultScreen = ({
   onRetry,
   onHome,
   onReview,
-}: QuizResultScreenProps) => (
-  <div className="screen-shell screen-shell-sm min-h-screen flex flex-col items-center justify-center text-center">
-    <div className="w-48 h-48 border-2 border-ink flex items-center justify-center mb-12">
-      <span className="material-symbols-outlined text-7xl text-ink">workspace_premium</span>
-    </div>
-    <div className="space-y-4 mb-16">
-      <h1 className="text-4xl font-serif italic font-bold">Certification Recorded</h1>
-      <p className="text-muted leading-relaxed">
-        Your latest assessment has been saved. Review your score below and keep building election
-        readiness.
-      </p>
-    </div>
-    <div className="grid grid-cols-2 gap-8 w-full mb-16 border-t border-b border-border py-8">
-      <div className="text-center">
-        <div className="text-3xl font-serif italic font-bold text-ink">
-          {score} / {total}
+}: QuizResultScreenProps) => {
+  const percent = Math.round((score / Math.max(total, 1)) * 100);
+
+  return (
+    <div className="screen-shell screen-shell-sm min-h-screen">
+      <section className="screen-card overflow-hidden p-6 text-center sm:p-8">
+        <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-[2rem] bg-amber-50 text-warning">
+          <Trophy size={46} />
         </div>
-        <div className="text-[10px] text-muted uppercase font-bold tracking-widest mt-1">
-          Modules Cleared
+        <p className="mt-6 page-eyebrow">Quiz complete</p>
+        <h1 className="mt-2 text-3xl font-black text-ink sm:text-4xl">Great work</h1>
+        <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-muted">
+          Your assessment has been saved. Review your score and keep building readiness.
+        </p>
+
+        <div className="mx-auto mt-8 flex h-40 w-40 items-center justify-center rounded-full text-3xl font-black text-accent"
+          style={{ background: `conic-gradient(#2563EB ${percent * 3.6}deg, #E2E8F0 0deg)` }}
+        >
+          <div className="flex h-28 w-28 flex-col items-center justify-center rounded-full bg-white">
+            <span>{percent}%</span>
+            <span className="text-xs font-bold text-muted">
+              {score}/{total}
+            </span>
+          </div>
         </div>
-      </div>
-      <div className="text-center">
-        <div className="text-3xl font-serif italic font-bold text-ink">
-          {user.readinessScore}%
+
+        <div className="mt-8 grid grid-cols-2 gap-3">
+          <div className="rounded-3xl bg-paper p-4">
+            <p className="text-2xl font-black text-ink">{user.readinessScore}%</p>
+            <p className="text-xs font-bold text-muted">Readiness</p>
+          </div>
+          <div className="rounded-3xl bg-amber-50 p-4">
+            <Sparkles className="mx-auto text-warning" size={24} />
+            <p className="mt-2 text-xs font-bold text-muted">Badge progress updated</p>
+          </div>
         </div>
-        <div className="text-[10px] text-muted uppercase font-bold tracking-widest mt-1">
-          Current Readiness
+
+        <div className="mt-8 space-y-3">
+          <button onClick={onHome} className="primary-button w-full">
+            Continue Learning
+          </button>
+          <button onClick={onReview} className="secondary-button w-full">
+            Review Answers
+          </button>
+          <button onClick={onRetry} className="ghost-button w-full">
+            Try Another Quiz
+          </button>
         </div>
-      </div>
+      </section>
     </div>
-    <div className="w-full space-y-4">
-      <button
-        onClick={onHome}
-        className="w-full py-6 bg-ink text-white font-bold uppercase text-[10px] tracking-widest sm:tracking-[0.2em]"
-      >
-        Return to Desk
-      </button>
-      <button
-        onClick={onReview}
-        className="w-full py-6 border border-ink text-ink font-bold uppercase text-[10px] tracking-widest sm:tracking-[0.2em] hover:bg-paper"
-      >
-        Review Answers
-      </button>
-      <button
-        onClick={onRetry}
-        className="w-full py-6 border border-border text-muted font-bold uppercase text-[10px] tracking-widest sm:tracking-[0.2em] hover:bg-paper"
-      >
-        Re-Examine
-      </button>
-    </div>
-  </div>
-);
+  );
+};
 
 interface QuizReviewScreenProps {
   answers: QuizAnswerReview[];
@@ -382,42 +439,43 @@ interface QuizReviewScreenProps {
 
 export const QuizReviewScreen = ({ answers, onBack, onHome }: QuizReviewScreenProps) => (
   <div className="screen-shell screen-shell-md min-h-screen">
-    <button
-      onClick={onBack}
-      className="flex items-center gap-2 text-ink font-bold mb-12 uppercase text-[10px] tracking-widest border-b-2 border-ink pb-1"
-    >
-      <span className="material-symbols-outlined text-sm">arrow_back</span> Return to Result
+    <button onClick={onBack} className="ghost-button mb-6">
+      <ArrowLeft size={17} />
+      Back to Result
     </button>
-    <h1 className="text-4xl font-serif italic font-bold mb-4">Answer Review</h1>
-    <p className="text-muted mb-12">
-      Review each answer and explanation. Keep checking official election rules with your local
-      election authority.
-    </p>
+    <section className="mb-6">
+      <p className="page-eyebrow">Review</p>
+      <h1 className="mt-2 text-3xl font-black text-ink sm:text-4xl">Answer review</h1>
+      <p className="mt-3 text-sm leading-6 text-muted">
+        Review each answer and explanation. Keep checking official election rules with your local
+        election authority.
+      </p>
+    </section>
 
-    <div className="space-y-6">
+    <div className="space-y-4">
       {answers.map((answer, index) => (
-        <section key={`${answer.question.id}-${index}`} className="screen-card border border-border bg-white p-5 sm:p-8">
-          <div className="flex flex-col sm:flex-row sm:justify-between gap-4 border-b border-border pb-4 mb-6">
-            <h2 className="font-serif italic font-bold text-xl break-words">
+        <section key={`${answer.question.id}-${index}`} className="screen-card p-5 sm:p-6">
+          <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <h2 className="text-xl font-black leading-tight text-ink">
               {index + 1}. {answer.question.text}
             </h2>
             <span
-              className={`shrink-0 text-[10px] uppercase font-black tracking-widest ${
-                answer.isCorrect ? "text-green-700" : "text-red-600"
+              className={`w-fit rounded-full px-3 py-1 text-xs font-bold ${
+                answer.isCorrect ? "bg-green-50 text-success" : "bg-red-50 text-error"
               }`}
             >
               {answer.isCorrect ? "Correct" : "Review"}
             </span>
           </div>
-          <div className="space-y-3">
+          <div className="space-y-2">
             {answer.question.options.map((option, optionIndex) => (
               <div
                 key={option}
-                className={`p-4 border text-sm ${
+                className={`rounded-2xl border p-4 text-sm font-semibold leading-6 ${
                   optionIndex === answer.question.correctIndex
-                    ? "border-green-700 bg-green-50 text-green-800"
+                    ? "border-green-200 bg-green-50 text-green-800"
                     : optionIndex === answer.selectedIndex
-                      ? "border-red-600 bg-red-50 text-red-700"
+                      ? "border-red-200 bg-red-50 text-red-700"
                       : "border-border bg-paper text-muted"
                 }`}
               >
@@ -425,16 +483,13 @@ export const QuizReviewScreen = ({ answers, onBack, onHome }: QuizReviewScreenPr
               </div>
             ))}
           </div>
-          <p className="mt-6 text-sm text-muted leading-relaxed">{answer.question.explanation}</p>
+          <p className="mt-5 text-sm leading-6 text-muted">{answer.question.explanation}</p>
         </section>
       ))}
     </div>
 
-    <button
-      onClick={onHome}
-      className="w-full py-6 bg-ink text-white font-bold uppercase text-[10px] tracking-widest sm:tracking-[0.2em] mt-12"
-    >
-      Return to Desk
+    <button onClick={onHome} className="primary-button mt-6 w-full">
+      Return to Dashboard
     </button>
   </div>
 );

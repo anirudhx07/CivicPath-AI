@@ -1,3 +1,13 @@
+import { useState } from "react";
+import {
+  ArrowLeft,
+  Bot,
+  CheckCircle2,
+  ClipboardCheck,
+  HelpCircle,
+  Volume2,
+  VolumeX,
+} from "lucide-react";
 import type { AccessibilitySettings, Lesson } from "../types";
 import { LESSONS } from "../data/lessons";
 import { useSpeech } from "../hooks/useSpeech";
@@ -7,6 +17,8 @@ interface LessonDetailScreenProps {
   accessibilitySettings: AccessibilitySettings;
   onBack: () => void;
   onComplete: (id: string) => void;
+  onAskAI: (question: string) => void;
+  onTakeQuiz: () => void;
 }
 
 export const LessonDetailScreen = ({
@@ -14,90 +26,179 @@ export const LessonDetailScreen = ({
   accessibilitySettings,
   onBack,
   onComplete,
+  onAskAI,
+  onTakeQuiz,
 }: LessonDetailScreenProps) => {
-    const { canSpeak, isSpeaking, speechError, speak, stopSpeaking } = useSpeech();
-    const lessonNumber = LESSONS.findIndex((item) => item.id === lesson.id) + 1;
-    const l = lesson;
-    const lessonText = [
-      lesson.title,
-      lesson.description,
-      ...lesson.sections.flatMap((section) => [section.title, section.content]),
-    ].join(". ");
-    const speechRate = accessibilitySettings.simpleLanguage ? 0.88 : 1;
-    return (
-        <div className="min-h-screen bg-white pt-[var(--mobile-header-height)] lg:pt-0">
-            <header className="sticky top-[var(--mobile-header-height)] lg:top-0 h-16 px-4 sm:px-8 border-b border-border bg-white z-30 flex items-center justify-between gap-4">
-                <button onClick={onBack} className="w-11 h-11 -ml-2 text-ink flex items-center justify-center shrink-0"><span className="material-symbols-outlined">arrow_back</span></button>
-                <span className="font-serif italic font-bold text-sm truncate min-w-0">{lesson.title}</span>
-                <span className="text-[10px] font-black text-accent tracking-tighter">{lesson.sections.length} SECTIONS</span>
-            </header>
-            <main className="pt-10 pb-[calc(var(--mobile-bottom-nav-height)+8rem)] lg:pb-40 px-4 sm:px-8 max-w-3xl mx-auto space-y-16">
-                <div>
-                   <span className="pill">Issue 01 • {l.category}</span>
-                   <h1 className="text-4xl sm:text-5xl font-serif italic font-bold mt-8 mb-6 break-words">{lesson.title}</h1>
-                   <p className="text-lg font-serif italic text-muted leading-relaxed">{lesson.description}</p>
-                   <div className="flex flex-wrap gap-3 mt-8">
-                      <button
-                        type="button"
-                        onClick={() => speak(lessonText, { rate: speechRate })}
-                        disabled={!canSpeak}
-                        className="px-4 py-3 border border-ink bg-white text-ink font-bold uppercase text-[10px] tracking-widest disabled:opacity-40"
-                      >
-                        <span className="material-symbols-outlined text-sm align-middle mr-2">volume_up</span>
-                        Read Lesson
-                      </button>
-                      <button
-                        type="button"
-                        onClick={stopSpeaking}
-                        disabled={!isSpeaking}
-                        className="px-4 py-3 border border-border bg-paper text-muted font-bold uppercase text-[10px] tracking-widest disabled:opacity-40"
-                      >
-                        <span className="material-symbols-outlined text-sm align-middle mr-2">volume_off</span>
-                        Stop Speaking
-                      </button>
-                   </div>
-                   {!canSpeak && (
-                    <p className="mt-4 text-[10px] uppercase font-bold tracking-widest text-muted">
-                      Read-aloud is not supported in this browser.
-                    </p>
-                   )}
-                   {speechError && (
-                    <p role="alert" className="mt-4 text-sm font-bold text-red-600">
-                      {speechError}
-                    </p>
-                   )}
-                </div>
-                
-                <div className="space-y-16">
-                    {lesson.sections.map((s, idx) => (
-                    <div key={s.id} className="space-y-6">
-                            <div className="flex items-center gap-4 sm:gap-6 border-b border-border pb-4">
-                                <div className="w-10 h-10 border border-ink text-ink flex items-center justify-center font-bold text-xs">0{idx + 1}</div>
-                                <h3 className="font-serif italic font-bold text-2xl break-words min-w-0">{s.title}</h3>
-                            </div>
-                            <p className="text-lg text-ink/90 leading-loose font-serif italic lg:pl-16">{s.content}</p>
-                        </div>
-                    ))}
-                </div>
+  const [completedSections, setCompletedSections] = useState<string[]>([]);
+  const { canSpeak, isSpeaking, speechError, speak, stopSpeaking } = useSpeech();
+  const lessonNumber = LESSONS.findIndex((item) => item.id === lesson.id) + 1;
+  const lessonText = [
+    lesson.title,
+    lesson.description,
+    ...lesson.sections.flatMap((section) => [section.title, section.content]),
+  ].join(". ");
+  const speechRate = accessibilitySettings.simpleLanguage ? 0.88 : 1;
+  const progress = Math.round((completedSections.length / Math.max(lesson.sections.length, 1)) * 100);
 
-                <div className="p-6 sm:p-12 border-2 border-ink flex flex-col md:flex-row items-stretch md:items-center gap-8 md:gap-10">
-                    <div className="w-20 h-20 bg-ink text-white flex items-center justify-center shrink-0">
-                        <span className="material-symbols-outlined text-4xl">menu_book</span>
-                    </div>
-                    <div>
-                        <h4 className="text-xl font-serif italic font-bold mb-2">Academic Support</h4>
-                        <p className="text-sm text-muted leading-relaxed">Request a synthesized summary or detailed dialectic analysis of this chapter.</p>
-                    </div>
-                    <button className="px-8 py-3 bg-ink text-white font-bold uppercase text-[10px] tracking-widest md:ml-auto">Request Info</button>
-                </div>
-            </main>
-            <div className="fixed bottom-[var(--mobile-bottom-nav-height)] lg:bottom-0 left-0 right-0 lg:left-64 z-40 p-4 sm:p-8 bg-white border-t border-ink">
-              <div className="max-w-3xl mx-auto flex gap-4">
-                <button onClick={() => { onComplete(lesson.id); onBack(); }} className="flex-1 py-6 bg-ink text-white font-bold uppercase text-xs tracking-widest sm:tracking-[0.3em] hover:bg-black transition-colors">
-                    Acknowledge Module Completion
-                </button>
-              </div>
+  const markSectionComplete = (sectionId: string) => {
+    setCompletedSections((prev) => Array.from(new Set([...prev, sectionId])));
+  };
+
+  return (
+    <div className="min-h-screen bg-paper pt-[var(--mobile-header-height)] md:pt-0">
+      <header className="sticky top-[var(--mobile-header-height)] z-30 border-b border-border bg-white/95 px-4 py-3 shadow-sm backdrop-blur-xl sm:px-8 md:top-0">
+        <div className="mx-auto flex max-w-4xl items-center justify-between gap-4">
+          <button
+            onClick={onBack}
+            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-border bg-white text-ink transition hover:border-accent hover:text-accent"
+            aria-label="Back"
+          >
+            <ArrowLeft size={19} />
+          </button>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-extrabold text-ink">{lesson.title}</p>
+            <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100">
+              <div className="h-full rounded-full bg-accent" style={{ width: `${progress}%` }} />
             </div>
+          </div>
+          <span className="hidden rounded-full bg-soft-blue px-3 py-1 text-xs font-bold text-accent sm:inline-flex">
+            {progress}% read
+          </span>
         </div>
-    );
+      </header>
+
+      <main className="mx-auto max-w-4xl space-y-6 px-4 py-6 pb-[calc(var(--mobile-bottom-nav-height)+8rem)] sm:px-8 md:pb-36">
+        <section className="screen-card overflow-hidden p-5 sm:p-7">
+          <span className="status-chip">Lesson {String(lessonNumber).padStart(2, "0")}</span>
+          <h1 className="mt-5 text-3xl font-black leading-tight text-ink sm:text-5xl">
+            {lesson.title}
+          </h1>
+          <p className="mt-4 max-w-3xl text-base leading-8 text-muted">{lesson.description}</p>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <button
+              type="button"
+              onClick={() => speak(lessonText, { rate: speechRate })}
+              disabled={!canSpeak}
+              className="secondary-button"
+            >
+              <Volume2 size={17} />
+              Read Lesson
+            </button>
+            <button
+              type="button"
+              onClick={stopSpeaking}
+              disabled={!isSpeaking}
+              className="secondary-button"
+            >
+              <VolumeX size={17} />
+              Stop Speaking
+            </button>
+            <button
+              type="button"
+              onClick={() => onAskAI(`Explain this lesson in simpler terms: ${lesson.title}`)}
+              className="secondary-button"
+            >
+              <Bot size={17} />
+              Ask AI
+            </button>
+          </div>
+          {!canSpeak && (
+            <p className="mt-4 text-sm font-semibold text-muted">
+              Read-aloud is not supported in this browser.
+            </p>
+          )}
+          {speechError && (
+            <p role="alert" className="mt-4 text-sm font-bold text-error">
+              {speechError}
+            </p>
+          )}
+        </section>
+
+        <section className="space-y-4">
+          {lesson.sections.map((section, index) => {
+            const isSectionComplete = completedSections.includes(section.id);
+
+            return (
+              <article key={section.id} className="screen-card p-5 sm:p-7">
+                <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="flex min-w-0 gap-4">
+                    <span
+                      className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-sm font-black ${
+                        isSectionComplete ? "bg-green-100 text-success" : "bg-soft-blue text-accent"
+                      }`}
+                    >
+                      {isSectionComplete ? <CheckCircle2 size={20} /> : `0${index + 1}`}
+                    </span>
+                    <div className="min-w-0">
+                      <p className="page-eyebrow">Section</p>
+                      <h2 className="mt-1 text-2xl font-black text-ink">{section.title}</h2>
+                    </div>
+                  </div>
+                </div>
+                <p className="text-base leading-8 text-slate-700">{section.content}</p>
+                <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+                  <button
+                    type="button"
+                    onClick={() => onAskAI(`Help me understand this lesson section: ${section.title}. ${section.content}`)}
+                    className="secondary-button"
+                  >
+                    <HelpCircle size={17} />
+                    Ask AI about this section
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => markSectionComplete(section.id)}
+                    className={isSectionComplete ? "secondary-button text-success" : "primary-button"}
+                  >
+                    <ClipboardCheck size={17} />
+                    {isSectionComplete ? "Section complete" : "Mark section complete"}
+                  </button>
+                </div>
+              </article>
+            );
+          })}
+        </section>
+
+        <section className="screen-card bg-gradient-to-br from-white to-soft-blue p-5 sm:p-7">
+          <h2 className="text-2xl font-black text-ink">Ready to test this lesson?</h2>
+          <p className="mt-2 text-sm leading-6 text-muted">
+            Use a short quiz to reinforce the concepts, then return to the dashboard with your
+            progress saved locally.
+          </p>
+          <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+            <button type="button" onClick={onTakeQuiz} className="primary-button">
+              Take Quiz
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                onComplete(lesson.id);
+                onBack();
+              }}
+              className="secondary-button"
+            >
+              Mark Lesson Complete
+            </button>
+          </div>
+        </section>
+      </main>
+
+      <div className="fixed bottom-[var(--mobile-bottom-nav-height)] left-0 right-0 z-40 border-t border-border bg-white/95 p-4 shadow-[0_-16px_30px_rgba(15,23,42,0.08)] backdrop-blur-xl md:bottom-0 md:left-[88px] lg:left-[260px]">
+        <div className="mx-auto flex max-w-4xl gap-3">
+          <button
+            onClick={() => {
+              onComplete(lesson.id);
+              onBack();
+            }}
+            className="primary-button flex-1"
+          >
+            Mark Lesson Complete
+          </button>
+          <button onClick={onTakeQuiz} className="secondary-button hidden sm:inline-flex">
+            Take Quiz
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 };

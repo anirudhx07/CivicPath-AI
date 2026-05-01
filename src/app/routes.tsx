@@ -108,7 +108,6 @@ export function renderScreen(
 
             if (result.ok) {
               setAuthenticatedUser(result.user);
-              navigateTo(AppScreen.HOME);
               return null;
             }
           }}
@@ -124,7 +123,6 @@ export function renderScreen(
                 role: user.role,
                 language: user.language,
               });
-              navigateTo(AppScreen.HOME);
               return null;
             }
           }}
@@ -140,7 +138,6 @@ export function renderScreen(
                 role: user.role,
                 language: user.language,
               });
-              navigateTo(AppScreen.HOME);
               return null;
             }
           }}
@@ -252,6 +249,15 @@ export function renderScreen(
           lesson={selectedLesson}
           accessibilitySettings={user.accessibilitySettings}
           onBack={goBack}
+          onAskAI={(question) => {
+            try {
+              sessionStorage.setItem("civicpath-ai-guide-draft", question);
+            } catch {
+              // The AI Guide still opens if session storage is unavailable.
+            }
+            navigateTo(AppScreen.AI_GUIDE);
+          }}
+          onTakeQuiz={() => navigateTo(AppScreen.QUIZ_START)}
           onComplete={(id) =>
             updateProgress(
               Array.from(new Set([...user.lessonsCompleted, id])),
@@ -278,7 +284,14 @@ export function renderScreen(
       return <TeacherToolkitScreen onBack={goBack} />;
 
     case AppScreen.SEARCH:
-      return <SearchScreen onBack={goBack} onNavigate={navigateTo} />;
+      return (
+        <SearchScreen
+          onBack={goBack}
+          onNavigate={navigateTo}
+          onOpenLesson={openLesson}
+          onOpenTimelineStep={(stepId) => openTimelineStep(stepId, false)}
+        />
+      );
 
     case AppScreen.PRIVACY_SAFETY:
       return <PrivacySafetyScreen onBack={goBack} />;

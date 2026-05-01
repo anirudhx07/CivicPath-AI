@@ -1,3 +1,15 @@
+import {
+  Accessibility,
+  Bell,
+  Bookmark,
+  ChevronRight,
+  GraduationCap,
+  LogOut,
+  ShieldCheck,
+  Sparkles,
+  Trophy,
+  UserRound,
+} from "lucide-react";
 import { AppScreen } from "../types";
 import type { Language, UserProfile, UserRole } from "../types";
 
@@ -37,121 +49,135 @@ export const ProfileScreen = ({
   onSignOut,
   authError,
   signOutLoading,
-}: ProfileScreenProps) => (
-  <div className="screen-shell screen-shell-sm flex-1 flex flex-col">
-    <div className="flex flex-col sm:flex-row sm:items-center gap-6 sm:gap-8 mb-12 sm:mb-16">
-      <div className="w-24 h-24 bg-ink text-white flex items-center justify-center text-4xl shrink-0 overflow-hidden">
-        {user.avatarUrl ? (
-          <img
-            src={user.avatarUrl}
-            alt={`${user.name} avatar`}
-            className="w-full h-full object-cover"
-            referrerPolicy="no-referrer"
-          />
-        ) : (
-          user.name[0]
-        )}
-      </div>
-      <div className="min-w-0 w-full">
-        <div className="flex flex-wrap items-center gap-3">
-          <h2 className="text-3xl sm:text-4xl font-serif italic font-bold break-words">
-            {user.name}
-          </h2>
-          {user.isGuest && (
-            <span className="border border-ink px-3 py-1 text-[9px] font-black uppercase tracking-widest">
-              Guest Mode
-            </span>
-          )}
-        </div>
-        {!user.isGuest && user.email && (
-          <p className="text-muted text-xs font-bold mt-2 break-words">{user.email}</p>
-        )}
-        <p className="text-muted text-[10px] uppercase tracking-[0.2em] font-bold mt-2">
-          {roleLabels[user.role]} / {languageLabels[user.language]}
-        </p>
-        {user.isGuest && (
-          <p className="mt-4 text-xs leading-relaxed text-muted max-w-xl">
-            You are using guest mode. Your progress is saved only on this device.
-          </p>
-        )}
-        <div className="flex gap-4 mt-4">
-          <button
-            onClick={() => onNavigate(AppScreen.BADGES)}
-            className="text-[10px] font-bold uppercase tracking-widest border-b border-accent text-accent"
-          >
-            View Honors
-          </button>
-        </div>
-      </div>
-    </div>
+}: ProfileScreenProps) => {
+  const initials = user.name
+    .split(" ")
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
 
-    <section className="grid grid-cols-1 sm:grid-cols-4 gap-0 border border-border mb-12 sm:mb-16">
-      <div className="p-6 sm:p-8 text-center border-b sm:border-b-0 sm:border-r border-border">
-        <div className="text-4xl font-serif text-accent mb-2">{user.readinessScore}%</div>
-        <div className="text-[9px] text-muted uppercase font-black tracking-widest">
-          Readiness
-        </div>
-      </div>
-      <div className="p-6 sm:p-8 text-center border-b sm:border-b-0 sm:border-r border-border">
-        <div className="text-4xl font-serif text-accent mb-2">
-          {user.lessonsCompleted.length}
-        </div>
-        <div className="text-[9px] text-muted uppercase font-black tracking-widest">
-          Lessons
-        </div>
-      </div>
-      <div className="p-6 sm:p-8 text-center border-b sm:border-b-0 sm:border-r border-border">
-        <div className="text-4xl font-serif text-accent mb-2">{user.badges.length}</div>
-        <div className="text-[9px] text-muted uppercase font-black tracking-widest">Badges</div>
-      </div>
-      <div className="p-6 sm:p-8 text-center">
-        <div className="text-4xl font-serif text-accent mb-2">{user.savedItems.length}</div>
-        <div className="text-[9px] text-muted uppercase font-black tracking-widest">
-          Saved Items
-        </div>
-      </div>
-    </section>
+  const stats = [
+    { label: "Readiness", value: `${user.readinessScore}%` },
+    { label: "Lessons", value: user.lessonsCompleted.length },
+    { label: "Badges", value: user.badges.length },
+    { label: "Saved", value: user.savedItems.length },
+  ];
 
-    <div className="space-y-0 border-t border-border">
-      {[
-        { label: "Saved Materials", icon: "history_edu", screen: AppScreen.SAVED },
-        { label: "Notifications", icon: "mail", screen: AppScreen.NOTIFICATIONS },
-        { label: "Accessibility", icon: "settings_accessibility", screen: AppScreen.ACCESSIBILITY },
-        { label: "Teacher Toolkit", icon: "auto_stories", screen: AppScreen.TEACHER_TOOLKIT },
-        { label: "Privacy Commitment", icon: "verified_user", screen: AppScreen.PRIVACY_SAFETY },
-      ].map((item) => (
-        <button
-          key={item.label}
-          onClick={() => onNavigate(item.screen)}
-          className="w-full flex items-center justify-between py-6 border-b border-border group hover:pl-2 transition-all"
-        >
-          <div className="flex items-center gap-4 sm:gap-6 min-w-0">
-            <span className="material-symbols-outlined text-muted group-hover:text-ink">
-              {item.icon}
-            </span>
-            <span className="font-bold text-sm tracking-tight break-words">{item.label}</span>
+  const settings = [
+    { label: "Saved Items", desc: "AI answers, myths, lessons, and quiz records", icon: Bookmark, screen: AppScreen.SAVED },
+    { label: "Updates", desc: "Learning reminders and badge notifications", icon: Bell, screen: AppScreen.NOTIFICATIONS },
+    { label: "Accessibility", desc: "Visual, voice, and learning preferences", icon: Accessibility, screen: AppScreen.ACCESSIBILITY },
+    { label: "Teacher Toolkit", desc: "Classroom-friendly civic learning support", icon: GraduationCap, screen: AppScreen.TEACHER_TOOLKIT },
+    { label: "Badges", desc: "Your civic learning milestones", icon: Trophy, screen: AppScreen.BADGES },
+    { label: "Audit & Safety", desc: "Neutrality, privacy, and prototype data", icon: ShieldCheck, screen: AppScreen.PRIVACY_SAFETY },
+  ];
+
+  return (
+    <div className="screen-shell screen-shell-lg flex-1">
+      <section className="mb-6 screen-card overflow-hidden p-5 sm:p-7">
+        <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+          <div className="flex min-w-0 flex-col gap-5 sm:flex-row sm:items-center">
+            <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-[1.75rem] bg-gradient-to-br from-accent to-indigo text-3xl font-black text-white shadow-lg shadow-blue-500/20">
+              {user.avatarUrl ? (
+                <img
+                  src={user.avatarUrl}
+                  alt={`${user.name} avatar`}
+                  className="h-full w-full object-cover"
+                  referrerPolicy="no-referrer"
+                />
+              ) : (
+                initials || <UserRound size={34} />
+              )}
+            </div>
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="text-3xl font-black leading-tight text-ink sm:text-4xl">
+                  {user.name}
+                </h1>
+                {user.isGuest && (
+                  <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-bold text-warning">
+                    Guest
+                  </span>
+                )}
+              </div>
+              <p className="mt-2 break-words text-sm font-semibold text-muted">
+                {user.isGuest ? "Guest learner" : user.email}
+              </p>
+              <p className="mt-1 text-sm font-bold text-accent">
+                {roleLabels[user.role]} / {languageLabels[user.language]}
+              </p>
+              {user.isGuest && (
+                <p className="mt-3 max-w-xl rounded-2xl bg-amber-50 p-3 text-sm leading-6 text-amber-700">
+                  Guest mode: progress is saved only on this device.
+                </p>
+              )}
+            </div>
           </div>
-          <span className="material-symbols-outlined text-border group-hover:text-ink">
-            arrow_forward_ios
-          </span>
-        </button>
-      ))}
+
+          <div className="rounded-3xl bg-soft-blue p-5 md:w-64">
+            <div className="flex items-center gap-3">
+              <Sparkles className="text-accent" size={22} />
+              <h2 className="font-black text-ink">Readiness</h2>
+            </div>
+            <div className="mt-4 h-3 overflow-hidden rounded-full bg-white">
+              <div className="h-full rounded-full bg-accent" style={{ width: `${user.readinessScore}%` }} />
+            </div>
+            <p className="mt-3 text-2xl font-black text-accent">{user.readinessScore}%</p>
+          </div>
+        </div>
+      </section>
+
+      <section className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-4">
+        {stats.map((stat) => (
+          <div key={stat.label} className="stat-card text-center">
+            <p className="text-3xl font-black text-ink">{stat.value}</p>
+            <p className="mt-1 text-xs font-bold text-muted">{stat.label}</p>
+          </div>
+        ))}
+      </section>
+
+      <section className="grid gap-4 lg:grid-cols-2">
+        {settings.map((item) => {
+          const Icon = item.icon;
+
+          return (
+            <button
+              key={item.label}
+              onClick={() => onNavigate(item.screen)}
+              className="screen-card tap-scale flex items-center gap-4 p-5 text-left transition hover:border-accent sm:p-6"
+            >
+              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-soft-blue text-accent">
+                <Icon size={22} />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-lg font-black text-ink">{item.label}</span>
+                <span className="mt-1 block text-sm leading-5 text-muted">{item.desc}</span>
+              </span>
+              <ChevronRight className="shrink-0 text-muted" size={20} />
+            </button>
+          );
+        })}
+      </section>
+
       {authError && (
-        <p role="alert" className="py-4 text-xs leading-relaxed text-red-600 font-bold">
+        <p
+          role="alert"
+          className="mt-6 rounded-2xl border border-red-100 bg-red-50 p-4 text-sm font-bold leading-6 text-error"
+        >
           {authError}
         </p>
       )}
+
       <button
         type="button"
         onClick={onSignOut}
         disabled={signOutLoading}
-        className="w-full flex items-center gap-6 py-8 text-red-600 font-bold group disabled:opacity-60 disabled:cursor-not-allowed"
+        className="mt-6 flex w-full items-center justify-center gap-2 rounded-3xl border border-red-100 bg-red-50 px-5 py-4 text-sm font-black text-error transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60"
       >
-        <span className="material-symbols-outlined">power_settings_new</span>
-        <span className="text-sm uppercase tracking-widest">
-          {signOutLoading ? "Ending Session" : "Log Out"}
-        </span>
+        <LogOut size={18} />
+        {signOutLoading ? "Ending Session..." : "Logout"}
       </button>
     </div>
-  </div>
-);
+  );
+};

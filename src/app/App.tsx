@@ -26,12 +26,15 @@ export default function App() {
 
   return (
     <div className={appClasses}>
-      {showNav && <Sidebar currentScreen={currentScreen} onNavigate={state.navigateTo} />}
+      {showNav && (
+        <Sidebar currentScreen={currentScreen} user={state.user} onNavigate={state.navigateTo} />
+      )}
 
       <main className="flex-1 relative flex flex-col min-w-0 overflow-x-hidden">
         {showNav && (
           <Header
             currentScreen={currentScreen}
+            user={state.user}
             onNavigate={state.navigateTo}
             onBack={history.length > 0 ? state.goBack : undefined}
           />

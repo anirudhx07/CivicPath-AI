@@ -45,5 +45,35 @@ export const TIMELINE_STEPS: TimelineStep[] = [
     fullExplanation: "The day when the will of the people is expressed through the ballot box.",
     checklist: ["Find polling station", "Bring ID", "Verify marking"],
     commonQuestions: []
+  },
+  {
+    id: "ts6",
+    title: "Vote Counting",
+    description: "Votes are counted under official procedures, observers, and verification rules.",
+    fullExplanation: "Vote counting follows a transparent official process. Depending on the location, counts may include machine totals, paper ballots, postal ballots, audits, and reconciliation checks.",
+    checklist: ["Follow official updates", "Distinguish projections from certified counts", "Check recount or audit rules"],
+    commonQuestions: [
+      { q: "Why can counting take time?", a: "Officials may need to verify ballots, reconcile records, and follow legal certification steps before declaring final totals." }
+    ]
+  },
+  {
+    id: "ts7",
+    title: "Result Declaration",
+    description: "Final results are announced after counting, checks, and certification are complete.",
+    fullExplanation: "Result declaration is the official announcement of winners or outcomes after the required counting and verification process has been completed.",
+    checklist: ["Use official result portals", "Check certification status", "Avoid confusing exit polls with final results"],
+    commonQuestions: [
+      { q: "Are media projections official?", a: "No. Projections can be informative, but only election authorities can declare official results." }
+    ]
+  },
+  {
+    id: "ts8",
+    title: "Government Formation",
+    description: "Elected representatives take office according to constitutional and legal rules.",
+    fullExplanation: "After results are certified, the next government or elected body is formed through the procedures defined by law, such as oath-taking, coalition formation, or appointment steps.",
+    checklist: ["Understand transition timelines", "Watch official swearing-in notices", "Track civic responsibilities after election day"],
+    commonQuestions: [
+      { q: "Does voting end civic participation?", a: "No. Citizens can keep following public decisions, contacting representatives, and participating in civic life." }
+    ]
   }
 ];

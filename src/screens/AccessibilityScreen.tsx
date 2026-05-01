@@ -1,3 +1,4 @@
+import { ArrowLeft, Eye, Mic2, Type, Volume2, VolumeX } from "lucide-react";
 import type { AccessibilitySettings } from "../types";
 import { useSpeech } from "../hooks/useSpeech";
 
@@ -7,53 +8,67 @@ interface AccessibilityScreenProps {
   onBack: () => void;
 }
 
-const settingRows: Array<{
-  key: keyof AccessibilitySettings;
-  label: string;
-  desc: string;
-  icon: string;
+const settingGroups: Array<{
+  title: string;
+  icon: typeof Eye;
+  items: Array<{
+    key: keyof AccessibilitySettings;
+    label: string;
+    desc: string;
+  }>;
 }> = [
   {
-    key: "largeText",
-    label: "Large Text",
-    desc: "Increase font size for better readability",
-    icon: "format_size",
+    title: "Visual",
+    icon: Eye,
+    items: [
+      {
+        key: "largeText",
+        label: "Large Text",
+        desc: "Increase font size for better readability.",
+      },
+      {
+        key: "highContrast",
+        label: "High Contrast",
+        desc: "Use stronger contrast across the interface.",
+      },
+      {
+        key: "dyslexiaFriendlyFont",
+        label: "Dyslexia-Friendly Font",
+        desc: "Use a readable sans-serif fallback font stack.",
+      },
+      {
+        key: "reduceAnimations",
+        label: "Reduce Animations",
+        desc: "Minimize transitions and motion effects.",
+      },
+    ],
   },
   {
-    key: "highContrast",
-    label: "High Contrast",
-    desc: "Use stronger contrast across the interface",
-    icon: "contrast",
+    title: "Voice",
+    icon: Mic2,
+    items: [
+      {
+        key: "voiceExplanations",
+        label: "Voice Explanations",
+        desc: "Use speech for generated explanations when supported.",
+      },
+      {
+        key: "readAnswersAloud",
+        label: "Read Answers Aloud",
+        desc: "Read AI Guide responses aloud after they appear.",
+      },
+    ],
   },
   {
-    key: "voiceExplanations",
-    label: "Voice Explanations",
-    desc: "Use speech for generated explanations when supported",
-    icon: "record_voice_over",
-  },
-  {
-    key: "readAnswersAloud",
-    label: "Read Answers Aloud",
-    desc: "Read AI Guide responses aloud after they appear",
-    icon: "volume_up",
-  },
-  {
-    key: "reduceAnimations",
-    label: "Reduce Animations",
-    desc: "Minimize screen transitions and motion effects",
-    icon: "motion_photos_off",
-  },
-  {
-    key: "simpleLanguage",
-    label: "Simple Language",
-    desc: "Ask AI features for clearer beginner-friendly wording",
-    icon: "psychology_alt",
-  },
-  {
-    key: "dyslexiaFriendlyFont",
-    label: "Dyslexia-Friendly Font",
-    desc: "Use a readable sans-serif fallback font stack",
-    icon: "font_download",
+    title: "Learning Preferences",
+    icon: Type,
+    items: [
+      {
+        key: "simpleLanguage",
+        label: "Simple Language",
+        desc: "Ask AI features for clearer beginner-friendly wording.",
+      },
+    ],
   },
 ];
 
@@ -67,102 +82,123 @@ export const AccessibilityScreen = ({
     "Voting Day Reminder. Bring the documents required in your area, follow polling place instructions, and verify local rules with your election authority before voting day.";
 
   return (
-    <div className="screen-shell screen-shell-sm min-h-screen">
-      <button
-        onClick={onBack}
-        className="flex items-center gap-2 text-ink font-bold mb-12 uppercase text-[10px] tracking-widest border-b-2 border-ink pb-1"
-      >
-        <span className="material-symbols-outlined text-sm">arrow_back</span> Settings
+    <div className="screen-shell screen-shell-lg min-h-screen">
+      <button onClick={onBack} className="ghost-button mb-6">
+        <ArrowLeft size={17} />
+        Back
       </button>
-      <h2 className="text-4xl font-serif italic font-bold mb-8">Accessibility</h2>
 
-      <div className="border border-border divide-y divide-border mb-12">
-        {settingRows.map((item) => {
-          const enabled = settings[item.key];
-
-          return (
-            <button
-              key={item.key}
-              type="button"
-              onClick={() => onChange({ [item.key]: !enabled })}
-              className="w-full p-5 sm:p-8 bg-white flex items-center justify-between gap-4 hover:bg-paper transition-colors text-left"
-              aria-pressed={enabled}
-            >
-              <div className="flex gap-4 sm:gap-6 min-w-0">
-                <span className="material-symbols-outlined text-muted">{item.icon}</span>
-                <div className="min-w-0">
-                  <h4 className="font-bold text-sm tracking-tight">{item.label}</h4>
-                  <p className="text-[11px] text-muted uppercase font-bold tracking-widest mt-1">
-                    {item.desc}
-                  </p>
-                </div>
-              </div>
-              <span
-                className={`w-12 h-6 relative border border-ink shrink-0 ${
-                  enabled ? "bg-ink" : "bg-border"
-                }`}
-              >
-                <span
-                  className={`absolute top-1 w-4 h-4 transition-all ${
-                    enabled ? "left-7 bg-white" : "left-1 bg-ink"
-                  }`}
-                />
-              </span>
-            </button>
-          );
-        })}
-      </div>
-
-      <section className="screen-card border-2 border-ink bg-white p-5 sm:p-8">
-        <div className="flex items-center gap-4 mb-6">
-          <span className="material-symbols-outlined text-ink">visibility</span>
-          <h3 className="text-xl font-serif italic font-bold">Preview</h3>
-        </div>
-        <p className="text-muted leading-relaxed mb-6">
-          This sample text shows how CivicPath explanations will feel with your current settings.
+      <section className="mb-6">
+        <p className="page-eyebrow">Accessibility</p>
+        <h1 className="mt-2 text-3xl font-black text-ink sm:text-4xl">Personalize your learning</h1>
+        <p className="mt-3 max-w-2xl text-sm leading-6 text-muted">
+          Adjust visual, voice, and AI wording preferences. Existing app logic applies these
+          settings across supported screens.
         </p>
-        <div className="border border-border bg-paper p-5 sm:p-6">
-          <div className="flex items-start justify-between gap-4 mb-2">
-            <h4 className="font-bold">Voting Day Reminder</h4>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => speak(previewText, { rate: settings.simpleLanguage ? 0.88 : 1 })}
-                disabled={!canSpeak}
-                className="w-11 h-11 border border-border bg-white text-ink flex items-center justify-center disabled:opacity-40"
-                aria-label="Read preview aloud"
-                title={canSpeak ? "Read preview aloud" : "Read-aloud is not supported"}
-              >
-                <span className="material-symbols-outlined text-base">volume_up</span>
-              </button>
-              <button
-                type="button"
-                onClick={stopSpeaking}
-                disabled={!isSpeaking}
-                className="w-11 h-11 border border-border bg-white text-ink flex items-center justify-center disabled:opacity-40"
-                aria-label="Stop speaking"
-                title="Stop speaking"
-              >
-                <span className="material-symbols-outlined text-base">volume_off</span>
-              </button>
+      </section>
+
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start">
+        <main className="space-y-5">
+          {settingGroups.map((group) => {
+            const GroupIcon = group.icon;
+
+            return (
+              <section key={group.title} className="screen-card p-5 sm:p-6">
+                <div className="mb-4 flex items-center gap-3">
+                  <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-soft-blue text-accent">
+                    <GroupIcon size={21} />
+                  </span>
+                  <h2 className="text-xl font-black text-ink">{group.title}</h2>
+                </div>
+                <div className="grid gap-3 md:grid-cols-2">
+                  {group.items.map((item) => {
+                    const enabled = settings[item.key];
+
+                    return (
+                      <button
+                        key={item.key}
+                        type="button"
+                        onClick={() => onChange({ [item.key]: !enabled })}
+                        className={`rounded-3xl border p-4 text-left transition ${
+                          enabled
+                            ? "border-blue-200 bg-soft-blue"
+                            : "border-border bg-white hover:border-accent"
+                        }`}
+                        aria-pressed={enabled}
+                      >
+                        <div className="mb-3 flex items-start justify-between gap-3">
+                          <h3 className="font-black text-ink">{item.label}</h3>
+                          <span
+                            className={`relative h-7 w-12 shrink-0 rounded-full transition ${
+                              enabled ? "bg-accent" : "bg-slate-200"
+                            }`}
+                          >
+                            <span
+                              className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow-sm transition ${
+                                enabled ? "left-6" : "left-1"
+                              }`}
+                            />
+                          </span>
+                        </div>
+                        <p className="text-sm leading-6 text-muted">{item.desc}</p>
+                      </button>
+                    );
+                  })}
+                </div>
+              </section>
+            );
+          })}
+        </main>
+
+        <aside className="screen-card p-5 sm:p-6 lg:sticky lg:top-8">
+          <div className="mb-5 flex items-center gap-3">
+            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-soft-blue text-accent">
+              <Eye size={21} />
+            </span>
+            <div>
+              <p className="page-eyebrow">Live preview</p>
+              <h2 className="text-xl font-black text-ink">Voting Day Reminder</h2>
             </div>
           </div>
-          <p className="text-sm leading-relaxed text-muted">
-            Bring the documents required in your area, follow polling place instructions, and verify
-            local rules with your election authority before voting day.
-          </p>
-        </div>
-        {!canSpeak && (
-          <p className="mt-4 text-[10px] uppercase font-bold tracking-widest text-muted">
-            Read-aloud is not supported in this browser.
-          </p>
-        )}
-        {speechError && (
-          <p role="alert" className="mt-4 text-sm font-bold text-red-600">
-            {speechError}
-          </p>
-        )}
-      </section>
+          <div className="rounded-3xl border border-border bg-paper p-5">
+            <h3 className="font-black text-ink">Bring the right documents</h3>
+            <p className="mt-2 text-sm leading-7 text-muted">
+              Bring the documents required in your area, follow polling place instructions, and
+              verify local rules with your election authority before voting day.
+            </p>
+          </div>
+          <div className="mt-4 flex gap-2">
+            <button
+              type="button"
+              onClick={() => speak(previewText, { rate: settings.simpleLanguage ? 0.88 : 1 })}
+              disabled={!canSpeak}
+              className="secondary-button min-h-12 rounded-full px-3 py-2 text-xs"
+            >
+              <Volume2 size={14} />
+              Read
+            </button>
+            <button
+              type="button"
+              onClick={stopSpeaking}
+              disabled={!isSpeaking}
+              className="secondary-button min-h-12 rounded-full px-3 py-2 text-xs"
+            >
+              <VolumeX size={14} />
+              Stop
+            </button>
+          </div>
+          {!canSpeak && (
+            <p className="mt-4 text-sm font-semibold text-muted">
+              Read-aloud is not supported in this browser.
+            </p>
+          )}
+          {speechError && (
+            <p role="alert" className="mt-4 text-sm font-bold text-error">
+              {speechError}
+            </p>
+          )}
+        </aside>
+      </div>
     </div>
   );
 };

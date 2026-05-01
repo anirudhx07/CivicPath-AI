@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { CheckCircle2, Languages } from "lucide-react";
 import type { Language } from "../types";
 
 interface LanguageScreenProps {
@@ -6,48 +7,58 @@ interface LanguageScreenProps {
 }
 
 export const LanguageScreen = ({ onNext }: LanguageScreenProps) => {
-    const langs: { id: Language; label: string; native: string }[] = [
-        { id: "en", label: "English", native: "English" },
-        { id: "hi", label: "Hindi", native: "हिन्दी" },
-        { id: "bn", label: "Bengali", native: "বাংলা" },
-        { id: "ta", label: "Tamil", native: "தமிழ்" },
-        { id: "te", label: "Telugu", native: "తెలుగు" },
-        { id: "mr", label: "Marathi", native: "मराठी" },
-    ];
-    const [selected, setSelected] = useState<Language>("en");
+  const langs: { id: Language; label: string; native: string }[] = [
+    { id: "en", label: "English", native: "English" },
+    { id: "hi", label: "Hindi", native: "Hindi" },
+    { id: "bn", label: "Bengali", native: "Bengali" },
+    { id: "ta", label: "Tamil", native: "Tamil" },
+    { id: "te", label: "Telugu", native: "Telugu" },
+    { id: "mr", label: "Marathi", native: "Marathi" },
+  ];
+  const [selected, setSelected] = useState<Language>("en");
 
-    return (
-        <div className="min-h-screen px-4 sm:px-8 py-10 sm:py-12 pb-[calc(3rem+env(safe-area-inset-bottom))] flex flex-col max-w-lg mx-auto w-full bg-paper">
-            <div className="text-center mb-16">
-                <div className="w-20 h-20 border border-ink mx-auto mb-10 flex items-center justify-center">
-                    <span className="material-symbols-outlined text-ink text-3xl">language</span>
-                </div>
-                <h1 className="text-4xl font-serif italic font-bold mb-4">Linguistic Setting</h1>
-                <p className="text-muted leading-relaxed">Select your primary medium for civic discovery and educational records.</p>
-            </div>
-            <div className="grid grid-cols-1 gap-4 mb-16">
-                {langs.map((l) => (
-                    <button
-                        key={l.id}
-                        onClick={() => setSelected(l.id)}
-                        className={`flex items-center justify-between p-6 border transition-all ${
-                            selected === l.id ? "border-ink bg-ink text-paper" : "border-border bg-white hover:border-ink"
-                        }`}
-                    >
-                        <div className="text-left">
-                            <div className="font-serif italic text-lg">{l.label}</div>
-                            <div className={`text-[10px] uppercase font-bold tracking-widest mt-1 break-words ${selected === l.id ? "text-paper/60" : "text-muted"}`}>{l.native}</div>
-                        </div>
-                        {selected === l.id && <span className="material-symbols-outlined text-paper text-sm">verified</span>}
-                    </button>
-                ))}
-            </div>
-            <button
-                onClick={() => onNext(selected)}
-                className="mt-auto w-full py-6 bg-ink text-white font-bold uppercase text-[10px] tracking-widest sm:tracking-[0.3em] hover:bg-black transition-colors"
-            >
-                Confirm Setting
-            </button>
-        </div>
-    );
+  return (
+    <div className="min-h-screen bg-[linear-gradient(135deg,#EFF6FF_0%,#F8FAFC_50%,#FFFFFF_100%)] px-4 py-8 pb-[calc(2rem+env(safe-area-inset-bottom))] sm:px-8">
+      <div className="mx-auto flex min-h-[calc(100dvh-4rem)] w-full max-w-xl flex-col justify-center">
+        <section className="screen-card p-5 sm:p-7">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-accent text-white shadow-lg shadow-blue-500/20">
+            <Languages size={30} />
+          </div>
+          <div className="mt-5 text-center">
+            <p className="page-eyebrow">Language</p>
+            <h1 className="mt-2 text-3xl font-black text-ink sm:text-4xl">Choose a language</h1>
+            <p className="mt-3 text-sm leading-6 text-muted">
+              Select your primary language for civic learning.
+            </p>
+          </div>
+          <div className="mt-6 grid grid-cols-1 gap-3">
+            {langs.map((language) => {
+              const isSelected = selected === language.id;
+
+              return (
+                <button
+                  key={language.id}
+                  onClick={() => setSelected(language.id)}
+                  className={`flex items-center justify-between rounded-3xl border p-4 text-left transition ${
+                    isSelected
+                      ? "border-blue-200 bg-soft-blue"
+                      : "border-border bg-white hover:border-accent"
+                  }`}
+                >
+                  <span>
+                    <span className="block text-lg font-black text-ink">{language.label}</span>
+                    <span className="block text-sm font-semibold text-muted">{language.native}</span>
+                  </span>
+                  {isSelected && <CheckCircle2 className="text-success" size={22} />}
+                </button>
+              );
+            })}
+          </div>
+          <button onClick={() => onNext(selected)} className="primary-button mt-6 w-full">
+            Confirm
+          </button>
+        </section>
+      </div>
+    </div>
+  );
 };
