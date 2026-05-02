@@ -22,7 +22,22 @@ function getSavedItemSpeechText(item: UserProfile["savedItems"][number]) {
     return item.data;
   }
 
+  if (item.type === "ai" && item.data && typeof item.data === "object") {
+    if (typeof item.data.answer === "string") {
+      return item.data.answer;
+    }
+
+    if (typeof item.data.summary === "string") {
+      return item.data.summary;
+    }
+  }
+
   return item.title;
+}
+
+function getSavedItemPreview(item: UserProfile["savedItems"][number]) {
+  const text = getSavedItemSpeechText(item);
+  return text.length > 150 ? `${text.slice(0, 150)}...` : text;
 }
 
 function getIcon(type: SavedItem["type"]) {
@@ -117,6 +132,11 @@ export const SavedItemsScreen = ({ user, onBack, onDelete }: SavedItemsScreenPro
                       </span>
                     </div>
                     <h2 className="text-lg font-black leading-tight text-ink">{item.title}</h2>
+                    {item.type === "ai" && (
+                      <p className="mt-2 text-sm leading-6 text-muted">
+                        {getSavedItemPreview(item)}
+                      </p>
+                    )}
                   </div>
                 </div>
                 <div className="mt-5 flex flex-wrap gap-2">
